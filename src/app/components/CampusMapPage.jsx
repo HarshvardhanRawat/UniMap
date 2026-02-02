@@ -34,7 +34,6 @@ import { buildings, navigationNodes, navigationEdges } from '../data/campusData'
 
 import { dijkstra } from '../../utils/dijkstra';
 import { buildWalkableSvgPath, generateTurnByTurnDirections } from '../../utils/pathUtils';
-import { buildProximityEdges } from '../../utils/buildProximityEdges';
 import logo from '../../assets/logo.png';
 import mapSvg from '../../assets/GF -Main Building Drawing-Model.svg';
 
@@ -58,29 +57,27 @@ export default function CampusMapPage({ userName, onLogout }) {
     ), []
   );
 
+  // Graph uses only explicit navigation edges (corridor + room connections).
+  // Corridor nodes are used for routing but not shown in directions.
   const graph = useMemo(() => {
-    const graph = {};
+    const g = {};
 
     navigationNodes.forEach(node => {
-      graph[node.id] = [];
+      g[node.id] = [];
     });
 
     navigationEdges.forEach(edge => {
-      if (!graph[edge.from]) graph[edge.from] = [];
-      if (!graph[edge.to]) graph[edge.to] = [];
-      graph[edge.from].push({ node: edge.to, weight: edge.weight });
-      graph[edge.to].push({ node: edge.from, weight: edge.weight });
+      const from = edge.from_node ?? edge.from;
+      const to = edge.to_node ?? edge.to;
+      const w = edge.distance ?? edge.weight ?? 1;
+      if (!from || !to) return;
+      if (!g[from]) g[from] = [];
+      if (!g[to]) g[to] = [];
+      g[from].push({ node: to, weight: w });
+      g[to].push({ node: from, weight: w });
     });
 
-    const proximityEdges = buildProximityEdges(navigationNodes);
-    proximityEdges.forEach(edge => {
-      if (!graph[edge.from]) graph[edge.from] = [];
-      if (!graph[edge.to]) graph[edge.to] = [];
-      graph[edge.from].push({ node: edge.to, weight: edge.weight });
-      graph[edge.to].push({ node: edge.from, weight: edge.weight });
-    });
-
-    return graph;
+    return g;
   }, []);
 
   const filteredLocations = useMemo(() =>
@@ -588,24 +585,24 @@ export default function CampusMapPage({ userName, onLogout }) {
                         <motion.g
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          style={{ transform: `scale(${1/zoom}) translate(0, -10px)`, transformOrigin: 'center center' }}
+                          style={{ transform: `scale(${1/zoom}) translate(0px, -10px)`, transformOrigin: 'center center' }}
                         >
                           <path
                             d={pathPoints}
                             stroke="#93c5fd"
-                            strokeWidth="8"
+                            strokeWidth="4"
                             fill="none"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                            strokeLinecap="butt"
+                            strokeLinejoin="miter"
                             opacity={0.4}
                           />
                           <motion.path
                             d={pathPoints}
                             stroke="#3b82f6"
-                            strokeWidth="4"
+                            strokeWidth="2"
                             fill="none"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                            strokeLinecap="butt"
+                            strokeLinejoin="miter"
                             initial={{ pathLength: 0 }}
                             animate={{ pathLength: 1 }}
                             transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}

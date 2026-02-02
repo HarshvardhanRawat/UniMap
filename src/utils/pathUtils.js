@@ -36,12 +36,16 @@ export function buildSmoothSvgPath(path, nodesMap) {
 
 /**
  * Build an SVG path that follows the exact node sequence (polyline).
- * Use this for a walkable path that stays on corridors and does not cut through walls.
+ * Uses corridor nodes and every path node to draw a perfect walkable line
+ * with straight segments between consecutive nodes.
  */
 export function buildWalkableSvgPath(path, nodesMap) {
   const points = path
     .filter((id) => nodesMap[id])
-    .map((id) => ({ x: nodesMap[id].x, y: nodesMap[id].y }));
+    .map((id) => {
+      const n = nodesMap[id];
+      return { x: Number(Number(n.x).toFixed(2)), y: Number(Number(n.y).toFixed(2)) };
+    });
   if (points.length === 0) return '';
   if (points.length === 1) return `M ${points[0].x},${points[0].y}`;
   const segments = [`M ${points[0].x},${points[0].y}`];
@@ -87,6 +91,10 @@ function formatNodeName(id) {
   return id.replace(/_/g, ' ').replace(/^[A-Z0-9]+_/, '');
 }
 
+function isCorridorNode(node) {
+  return node && node.type === 'corridor';
+}
+
 function getTurnInstruction(turn, currId, nextId) {
   const nextName = formatNodeName(nextId);
   switch (turn) {
@@ -98,6 +106,23 @@ function getTurnInstruction(turn, currId, nextId) {
     default:
       return `Continue straight to ${nextName}`;
   }
+}
+
+/** Find the next non-corridor node index in points, or points.length - 1 (destination). */
+function nextNonCorridorIndex(points, fromIndex) {
+  for (let j = fromIndex + 1; j < points.length; j++) {
+    if (!isCorridorNode(points[j])) return j;
+  }
+  return points.length - 1;
+}
+
+/** Sum distance along points from start to end index (inclusive of segment ends). */
+function segmentDistance(points, startIdx, endIdx) {
+  let d = 0;
+  for (let k = startIdx; k < endIdx && k + 1 < points.length; k++) {
+    d += distance(points[k], points[k + 1]);
+  }
+  return d;
 }
 
 export function generateTurnByTurnDirections(path, nodesMap) {
@@ -125,19 +150,31 @@ export function generateTurnByTurnDirections(path, nodesMap) {
     const prev = points[i - 1];
     const curr = points[i];
     const next = points[i + 1];
-    const distToNext = next ? formatDistance(distance(curr, next)) : '0m';
+
+    // Only show navigation steps at non-corridor waypoints, at destination, or first step
+    const atDestination = !next;
+    const isFirstStep = i === 1;
+    const isWaypoint = isFirstStep || !isCorridorNode(curr) || atDestination;
+    if (!isWaypoint) continue;
+
+    const nextWaypointIdx = nextNonCorridorIndex(points, i);
+    const nextWaypoint = points[nextWaypointIdx];
+    const distToNextWaypoint = segmentDistance(points, i, nextWaypointIdx);
 
     if (i === 1) {
+      const targetName = isCorridorNode(nextWaypoint)
+        ? 'the corridor'
+        : formatNodeName(nextWaypoint.id);
       directions.push({
         direction: 'straight',
-        instruction: `Head towards ${formatNodeName(curr.id)}`,
-        distance: formatDistance(distance(prev, curr)),
+        instruction: `Head towards ${targetName}`,
+        distance: formatDistance(segmentDistance(points, 0, nextWaypointIdx)),
         nodeId: curr.id,
       });
       continue;
     }
 
-    if (!next) {
+    if (atDestination) {
       directions.push({
         direction: 'straight',
         instruction: `Arrive at ${formatNodeName(curr.id)}`,
@@ -148,12 +185,21 @@ export function generateTurnByTurnDirections(path, nodesMap) {
     }
 
     const turn = getTurnDirection(prev, curr, next);
-    const instruction = getTurnInstruction(turn, curr.id, next.id);
+    const instructionTarget =
+      nextWaypointIdx > i + 1
+        ? (isCorridorNode(nextWaypoint) ? 'the corridor' : formatNodeName(nextWaypoint.id))
+        : formatNodeName(next.id);
+    const instruction =
+      turn === 'straight'
+        ? `Continue straight to ${instructionTarget}`
+        : turn === 'left'
+          ? `Turn left towards ${instructionTarget}`
+          : `Turn right towards ${instructionTarget}`;
 
     directions.push({
       direction: turn,
       instruction,
-      distance: distToNext,
+      distance: formatDistance(distToNextWaypoint),
       nodeId: curr.id,
     });
   }
