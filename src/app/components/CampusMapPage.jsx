@@ -207,6 +207,7 @@ export default function CampusMapPage({ userName, onLogout }) {
     return { left: `${leftPercent}%`, top: `${topPercent}%` };
   }, []);
 
+  
   return (
     <div className="min-h-screen flex flex-col">
       <motion.header
