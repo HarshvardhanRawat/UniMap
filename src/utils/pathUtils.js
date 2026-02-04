@@ -1,4 +1,12 @@
+/**
+ * Builds a smooth SVG path using cubic Bezier curves.
+ * Creates curved paths between points for a more natural appearance.
+ * 
+ * @param {array} points - Array of {x: number, y: number} coordinate objects
+ * @returns {string} - SVG path string with cubic Bezier curves
+ */
 export function buildSmoothPath(points) {
+  // Handle edge cases
   if (points.length === 0) return '';
   if (points.length === 1) return `M ${points[0].x},${points[0].y}`;
   if (points.length === 2) {
@@ -6,27 +14,39 @@ export function buildSmoothPath(points) {
   }
 
   const path = [];
-  const tension = 0.3;
+  const tension = 0.3; // Controls curve smoothness (0 = straight, 1 = very curved)
 
+  // Move to first point
   path.push(`M ${points[0].x},${points[0].y}`);
 
+  // Create cubic Bezier curves between points
   for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[Math.max(0, i - 1)];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[Math.min(points.length - 1, i + 2)];
+    const p0 = points[Math.max(0, i - 1)]; // Previous point (or first if at start)
+    const p1 = points[i];                   // Current point
+    const p2 = points[i + 1];               // Next point
+    const p3 = points[Math.min(points.length - 1, i + 2)]; // Point after next (or last if near end)
 
+    // Calculate control points for smooth curve
     const cp1x = p1.x + (p2.x - p0.x) / 6 * tension;
     const cp1y = p1.y + (p2.y - p0.y) / 6 * tension;
     const cp2x = p2.x - (p3.x - p1.x) / 6 * tension;
     const cp2y = p2.y - (p3.y - p1.y) / 6 * tension;
 
+    // Add cubic Bezier curve segment
     path.push(`C ${cp1x.toFixed(2)},${cp1y.toFixed(2)} ${cp2x.toFixed(2)},${cp2y.toFixed(2)} ${p2.x},${p2.y}`);
   }
 
   return path.join(' ');
 }
 
+/**
+ * Converts a path of node IDs to a smooth SVG path string.
+ * Filters out nodes that don't exist in the nodes map.
+ * 
+ * @param {array} path - Array of node ID strings
+ * @param {object} nodesMap - Map of node IDs to node objects with x, y coordinates
+ * @returns {string} - Smooth SVG path string
+ */
 export function buildSmoothSvgPath(path, nodesMap) {
   const points = path
     .filter((id) => nodesMap[id])
@@ -35,9 +55,13 @@ export function buildSmoothSvgPath(path, nodesMap) {
 }
 
 /**
- * Build an SVG path that follows the exact node sequence (polyline).
+ * Builds an SVG path that follows the exact node sequence (polyline).
  * Uses corridor nodes and every path node to draw a perfect walkable line
  * with straight segments between consecutive nodes.
+ * 
+ * @param {array} path - Array of node ID strings
+ * @param {object} nodesMap - Map of node IDs to node objects with x, y coordinates
+ * @returns {string} - SVG path string with straight line segments (M...L...L...)
  */
 export function buildWalkableSvgPath(path, nodesMap) {
   const points = path
@@ -55,31 +79,63 @@ export function buildWalkableSvgPath(path, nodesMap) {
   return segments.join(' ');
 }
 
+/**
+ * Determines the turn direction at a waypoint based on incoming and outgoing vectors.
+ * Uses cross product to determine left/right and dot product for angle calculation.
+ * 
+ * @param {object} prev - Previous point {x, y}
+ * @param {object} curr - Current point {x, y}
+ * @param {object} next - Next point {x, y}
+ * @returns {string} - Turn direction: 'left', 'right', or 'straight'
+ */
 function getTurnDirection(prev, curr, next) {
+  // Calculate incoming and outgoing vectors
   const incomingX = curr.x - prev.x;
   const incomingY = curr.y - prev.y;
   const outgoingX = next.x - curr.x;
   const outgoingY = next.y - curr.y;
 
+  // Cross product: positive = right turn, negative = left turn
   const cross = incomingX * outgoingY - incomingY * outgoingX;
+  // Dot product: used to calculate angle between vectors
   const dot = incomingX * outgoingX + incomingY * outgoingY;
   const lenIn = Math.hypot(incomingX, incomingY);
   const lenOut = Math.hypot(outgoingX, outgoingY);
 
+  // Handle very short segments (likely same point)
   if (lenIn < 1 || lenOut < 1) return 'straight';
+  
+  // Calculate cosine of angle between vectors
   const cosAngle = dot / (lenIn * lenOut);
-  const angleThreshold = 0.95;
+  const angleThreshold = 0.95; // ~18 degrees threshold for "straight"
+  
+  // If angle is close to 0 (cosine close to 1), consider it straight
   if (cosAngle > angleThreshold) return 'straight';
 
+  // Determine turn direction using cross product
   if (cross > 0) return 'right';
   if (cross < 0) return 'left';
   return 'straight';
 }
 
+/**
+ * Calculates Euclidean distance between two points.
+ * 
+ * @param {object} p1 - First point {x, y}
+ * @param {object} p2 - Second point {x, y}
+ * @returns {number} - Distance in pixels
+ */
 function distance(p1, p2) {
   return Math.hypot(p2.x - p1.x, p2.y - p1.y);
 }
 
+/**
+ * Formats distance from pixels to meters with human-readable text.
+ * Assumes 1 pixel ≈ 0.15 meters (scale factor).
+ * 
+ * @param {number} pixels - Distance in pixels
+ * @returns {string} - Formatted distance string (e.g., "5m", "a few steps")
+ */
 function formatDistance(pixels) {
   const meters = Math.round(pixels * 0.15);
   if (meters < 1) return 'a few steps';
@@ -87,14 +143,36 @@ function formatDistance(pixels) {
   return `${meters}m`;
 }
 
+/**
+ * Formats a node ID into a human-readable name.
+ * Removes prefix patterns and replaces underscores with spaces.
+ * 
+ * @param {string} id - Node ID (e.g., "GF_101_Lab")
+ * @returns {string} - Formatted name (e.g., "101 Lab")
+ */
 function formatNodeName(id) {
   return id.replace(/_/g, ' ').replace(/^[A-Z0-9]+_/, '');
 }
 
+/**
+ * Checks if a node is a corridor node.
+ * Corridor nodes are used for routing but not shown in directions.
+ * 
+ * @param {object} node - Node object with type property
+ * @returns {boolean} - True if node is a corridor
+ */
 function isCorridorNode(node) {
   return node && node.type === 'corridor';
 }
 
+/**
+ * Generates a turn instruction string based on turn direction and target.
+ * 
+ * @param {string} turn - Turn direction: 'left', 'right', or 'straight'
+ * @param {string} currId - Current node ID
+ * @param {string} nextId - Next node ID
+ * @returns {string} - Formatted instruction string
+ */
 function getTurnInstruction(turn, currId, nextId) {
   const nextName = formatNodeName(nextId);
   switch (turn) {
@@ -108,7 +186,14 @@ function getTurnInstruction(turn, currId, nextId) {
   }
 }
 
-/** Find the next non-corridor node index in points, or points.length - 1 (destination). */
+/**
+ * Finds the next non-corridor node index in the points array.
+ * Used to skip corridor nodes in navigation directions.
+ * 
+ * @param {array} points - Array of point objects with type property
+ * @param {number} fromIndex - Starting index to search from
+ * @returns {number} - Index of next non-corridor node, or last index if none found
+ */
 function nextNonCorridorIndex(points, fromIndex) {
   for (let j = fromIndex + 1; j < points.length; j++) {
     if (!isCorridorNode(points[j])) return j;
@@ -116,7 +201,15 @@ function nextNonCorridorIndex(points, fromIndex) {
   return points.length - 1;
 }
 
-/** Sum distance along points from start to end index (inclusive of segment ends). */
+/**
+ * Calculates the total distance along a segment of points.
+ * Sums distances between consecutive points from startIdx to endIdx.
+ * 
+ * @param {array} points - Array of point objects with x, y coordinates
+ * @param {number} startIdx - Starting index (inclusive)
+ * @param {number} endIdx - Ending index (exclusive)
+ * @returns {number} - Total distance in pixels
+ */
 function segmentDistance(points, startIdx, endIdx) {
   let d = 0;
   for (let k = startIdx; k < endIdx && k + 1 < points.length; k++) {
@@ -125,15 +218,29 @@ function segmentDistance(points, startIdx, endIdx) {
   return d;
 }
 
+/**
+ * Generates turn-by-turn navigation directions from a path.
+ * Filters out corridor nodes and creates human-readable instructions.
+ * 
+ * @param {array} path - Array of node ID strings representing the route
+ * @param {object} nodesMap - Map of node IDs to node objects with x, y, type properties
+ * @returns {array} - Array of direction objects with:
+ *                    - direction: 'left' | 'right' | 'straight'
+ *                    - instruction: Human-readable instruction string
+ *                    - distance: Formatted distance string
+ *                    - nodeId: Current node ID
+ */
 export function generateTurnByTurnDirections(path, nodesMap) {
   const directions = [];
 
+  // Convert node IDs to point objects with coordinates
   const points = [];
   for (const id of path) {
     const node = nodesMap[id];
     if (node) points.push({ ...node, id });
   }
 
+  // Handle edge cases
   if (points.length < 2) {
     if (points.length === 1) {
       directions.push({
@@ -146,6 +253,7 @@ export function generateTurnByTurnDirections(path, nodesMap) {
     return directions;
   }
 
+  // Generate directions for each waypoint
   for (let i = 1; i < points.length; i++) {
     const prev = points[i - 1];
     const curr = points[i];
@@ -155,12 +263,13 @@ export function generateTurnByTurnDirections(path, nodesMap) {
     const atDestination = !next;
     const isFirstStep = i === 1;
     const isWaypoint = isFirstStep || !isCorridorNode(curr) || atDestination;
-    if (!isWaypoint) continue;
+    if (!isWaypoint) continue; // Skip corridor nodes
 
     const nextWaypointIdx = nextNonCorridorIndex(points, i);
     const nextWaypoint = points[nextWaypointIdx];
     const distToNextWaypoint = segmentDistance(points, i, nextWaypointIdx);
 
+    // First step: heading instruction
     if (i === 1) {
       const targetName = isCorridorNode(nextWaypoint)
         ? 'the corridor'
@@ -174,6 +283,7 @@ export function generateTurnByTurnDirections(path, nodesMap) {
       continue;
     }
 
+    // Last step: arrival instruction
     if (atDestination) {
       directions.push({
         direction: 'straight',
@@ -184,6 +294,7 @@ export function generateTurnByTurnDirections(path, nodesMap) {
       continue;
     }
 
+    // Intermediate steps: turn instructions
     const turn = getTurnDirection(prev, curr, next);
     const instructionTarget =
       nextWaypointIdx > i + 1

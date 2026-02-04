@@ -2,9 +2,21 @@ import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import logo from '../../assets/logo.png';
 
-
-//Login Page Component
+/**
+ * LoginPage Component
+ * 
+ * Displays the login interface with Google authentication option.
+ * Provides a simple login flow that sets a default user name.
+ * 
+ * @param {function} onLogin - Callback function called when user logs in
+ *                            Receives the user's name as parameter
+ */
 export default function LoginPage({ onLogin }) {
+  /**
+   * Handles Google login button click.
+   * Currently uses a default user name for demonstration.
+   * TODO: Integrate with actual Google OAuth when backend is ready.
+   */
   const handleGoogleLogin = () => {
     onLogin('Student User');
   };
