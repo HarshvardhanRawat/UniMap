@@ -11,7 +11,18 @@ import MapBox from './ui/MapBox';
 import { campusLocations } from '../data/LocationConvert';
 import { buildings, navigationNodes, navigationEdges } from '../data/campusData';
 import { dijkstra } from '../../utils/dijkstra';
-import { buildWalkableSvgPath, generateTurnByTurnDirections } from '../../utils/pathUtils';
+import { buildWalkableSvgPath } from '../../utils/pathUtils';
+import { generateDetailedNavigationInstructions } from '../../utils/navigation_instructions';
+
+/** Maps navigation direction to icon key (left, right, straight) */
+function mapDirectionForIcon(direction) {
+  if (!direction) return 'straight';
+  const leftVariants = ['slight left', 'sharp left', 'u-turn'];
+  const rightVariants = ['slight right', 'sharp right'];
+  if (leftVariants.includes(direction)) return 'left';
+  if (rightVariants.includes(direction)) return 'right';
+  return direction;
+}
 
 /**
  * CampusMapPage Component
@@ -133,8 +144,19 @@ export default function CampusMapPage({ userName, onLogout }) {
           const svgPath = buildWalkableSvgPath(pathWithCoordinates, nodesMap);
           setPathPoints(svgPath);
 
-          // Generate turn-by-turn directions
-          const directions = generateTurnByTurnDirections(pathWithCoordinates, nodesMap);
+          // Generate navigation instructions (angle-based turns, edge types)
+          const rawInstructions = generateDetailedNavigationInstructions(
+            pathWithCoordinates,
+            nodesMap,
+            navigationEdges
+          );
+          const directions = rawInstructions
+            .filter((i) => i.action !== 'error')
+            .map((i) => ({
+              direction: mapDirectionForIcon(i.direction),
+              instruction: [i.message, i.landmark].filter(Boolean).join(' '),
+              distance: i.distanceInMeters != null ? `${i.distanceInMeters}m` : '',
+            }));
           setNavigationDirections(directions);
           setIsNavigating(true);
         } else {
