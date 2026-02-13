@@ -29,21 +29,23 @@ function calculateAngle(p1, p2, p3) {
 
 /**
  * Determine turn direction from angle
+ * (Negated for screen/SVG coords where Y increases downward)
  */
 function getTurnDirection(angle) {
-  const absAngle = Math.abs(angle);
+  const flipped = -angle; // Fix for screen coords: left/right were reversed from user perspective
+  const absAngle = Math.abs(flipped);
   
   if (absAngle < 20) {
     return 'straight';
   } else if (absAngle > 160) {
     return 'u-turn';
-  } else if (angle > 0) {
-    // Positive angle = counter-clockwise = left turn (in standard coordinates)
+  } else if (flipped > 0) {
+    // Positive = left turn (from user perspective)
     if (absAngle < 60) return 'slight left';
     if (absAngle < 120) return 'left';
     return 'sharp left';
   } else {
-    // Negative angle = clockwise = right turn
+    // Negative = right turn (from user perspective)
     if (absAngle < 60) return 'slight right';
     if (absAngle < 120) return 'right';
     return 'sharp right';

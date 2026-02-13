@@ -129,10 +129,9 @@ export default function CampusMapPage({ userName, onLogout }) {
    */
   const handleStartNavigation = useCallback(() => {
     if (destination && currentLocation) {
+      // Path: FROM current location (where you are) TO destination (where you want to go)
       const startNode = currentLocation.id;
       const endNode = destination.id;
-
-      // Find shortest path using Dijkstra's algorithm
       const path = dijkstra(graph, startNode, endNode);
 
       if (path && path.length > 0) {
@@ -269,29 +268,19 @@ export default function CampusMapPage({ userName, onLogout }) {
               </h2>
 
               <div className="space-y-4">
-                {/* Destination Search */}
+                {/* Current Location first (FROM) - matches natural "from → to" flow */}
+                <SearchCurrentLocation
+                  currentLocation={currentLocation}
+                  onCurrentLocationSelect={handleCurrentLocationSelect}
+                  onCurrentLocationClear={handleCurrentLocationClear}
+                />
+
+                {/* Destination second (TO) */}
                 <SearchDestination
                   destination={destination}
                   onDestinationSelect={handleDestinationSelect}
                   onDestinationClear={handleDestinationClear}
                 />
-
-                {/* Current Location Search (shown only when destination is selected) */}
-                <AnimatePresence>
-                  {destination && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                    >
-                      <SearchCurrentLocation
-                        currentLocation={currentLocation}
-                        onCurrentLocationSelect={handleCurrentLocationSelect}
-                        onCurrentLocationClear={handleCurrentLocationClear}
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
                 {/* Start Navigation Button */}
                 <AnimatePresence>
