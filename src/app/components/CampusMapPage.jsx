@@ -91,10 +91,23 @@ export default function CampusMapPage({ userName, onLogout }) {
 
   /**
    * Handles destination selection
+   *
+   * If navigation is currently active, changing the destination will:
+   * - stop navigation
+   * - clear the existing path and directions
+   * - reset the map view (zoom and pan) to defaults
    */
   const handleDestinationSelect = useCallback((location) => {
+    if (isNavigating) {
+      setIsNavigating(false);
+      setPathPoints('');
+      setNavigationDirections([]);
+      setZoom(1);
+      setPanX(0);
+      setPanY(0);
+    }
     setDestination(location);
-  }, []);
+  }, [isNavigating]);
 
   /**
    * Handles destination clearing
@@ -108,10 +121,23 @@ export default function CampusMapPage({ userName, onLogout }) {
 
   /**
    * Handles current location selection
+   *
+   * If navigation is currently active, changing the current location will:
+   * - stop navigation
+   * - clear the existing path and directions
+   * - reset the map view (zoom and pan) to defaults
    */
   const handleCurrentLocationSelect = useCallback((location) => {
+    if (isNavigating) {
+      setIsNavigating(false);
+      setPathPoints('');
+      setNavigationDirections([]);
+      setZoom(1);
+      setPanX(0);
+      setPanY(0);
+    }
     setCurrentLocation(location);
-  }, []);
+  }, [isNavigating]);
 
   /**
    * Handles current location clearing
