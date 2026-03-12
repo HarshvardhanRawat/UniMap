@@ -11,7 +11,7 @@ import MapBox from './ui/MapBox';
 import { campusLocations } from '../data/LocationConvert';
 import { buildings, navigationNodes, navigationEdges } from '../data/campusData';
 import { dijkstra } from '../../utils/dijkstra';
-import { buildWalkableSvgPath } from '../../utils/pathUtils';
+import { buildPolylinePoints } from '../../utils/pathUtils';
 import { generateDetailedNavigationInstructions } from '../../utils/navigation_instructions';
 
 /** Maps navigation direction to icon key (left, right, straight) */
@@ -165,9 +165,9 @@ export default function CampusMapPage({ userName, onLogout }) {
         const pathWithCoordinates = path.filter((nodeId) => nodesMap[nodeId]);
 
         if (pathWithCoordinates.length > 0) {
-          // Build SVG path for visualization
-          const svgPath = buildWalkableSvgPath(pathWithCoordinates, nodesMap);
-          setPathPoints(svgPath);
+          // Build polyline points for pixel-perfect path (exact node coords, no smoothing)
+          const points = buildPolylinePoints(pathWithCoordinates, nodesMap);
+          setPathPoints(points);
 
           // Generate navigation instructions (angle-based turns, edge types)
           const rawInstructions = generateDetailedNavigationInstructions(
@@ -208,7 +208,7 @@ export default function CampusMapPage({ userName, onLogout }) {
   }, [destination, currentLocation, graph, nodesMap]);
 
   /**
-   * Resets navigation state and clears all selections
+   * Resets navigation state, clears all selections, and resets map to default zoom/pan
    */
   const handleResetNavigation = useCallback(() => {
     setIsNavigating(false);
@@ -216,6 +216,9 @@ export default function CampusMapPage({ userName, onLogout }) {
     setCurrentLocation(null);
     setPathPoints('');
     setNavigationDirections([]);
+    setZoom(1);
+    setPanX(0);
+    setPanY(0);
   }, []);
 
   /**

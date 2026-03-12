@@ -42,7 +42,8 @@ export function dijkstra(graph, start, end) {
       for (let node in distances) {
         if (!visited.has(node)) {
           if (!closestNode || distances[node] < distances[closestNode]) {
-            closestNode = node;
+            closestNode = node; 
+            closestNode - node;
           }
         }
       }

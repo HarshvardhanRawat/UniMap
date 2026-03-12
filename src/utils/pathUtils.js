@@ -58,7 +58,9 @@ export function buildSmoothSvgPath(path, nodesMap) {
  * Builds an SVG path that follows the exact node sequence (polyline).
  * Uses corridor nodes and every path node to draw a perfect walkable line
  * with straight segments between consecutive nodes.
- * 
+ *
+ * @deprecated Prefer buildPolylinePoints for pixel-perfect rendering.
+ *
  * @param {array} path - Array of node ID strings
  * @param {object} nodesMap - Map of node IDs to node objects with x, y coordinates
  * @returns {string} - SVG path string with straight line segments (M...L...L...)
@@ -77,6 +79,25 @@ export function buildWalkableSvgPath(path, nodesMap) {
     segments.push(`L ${points[i].x},${points[i].y}`);
   }
   return segments.join(' ');
+}
+
+/**
+ * Builds a polyline points string from Dijkstra path for pixel-perfect rendering.
+ * Uses ONLY exact node coordinates from the nodes map—no rounding, no smoothing.
+ * Coordinates must be in the same system as the SVG viewBox (e.g. "0 0 840.75 605.66").
+ *
+ * @param {string[]} shortestPathNodes - Ordered array of node IDs from Dijkstra
+ * @param {object} nodes - Map of node IDs to {x, y} objects (viewBox coordinates)
+ * @returns {string} - Space-separated "x,y" pairs for SVG polyline points attribute
+ */
+export function buildPolylinePoints(shortestPathNodes, nodes) {
+  return shortestPathNodes
+    .filter((nodeId) => nodes[nodeId] && nodes[nodeId].x != null && nodes[nodeId].y != null)
+    .map((nodeId) => {
+      const node = nodes[nodeId];
+      return `${node.x},${node.y}`;
+    })
+    .join(' ');
 }
 
 /**

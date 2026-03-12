@@ -15,7 +15,7 @@ import mapSvg from '../../../assets/GF -Main Building Drawing-Model.svg';
  * @param {object} destination - Selected destination location with x, y coordinates
  * @param {object} currentLocation - Selected current location with x, y coordinates
  * @param {boolean} isNavigating - Whether navigation is currently active
- * @param {string} pathPoints - SVG path string for the navigation route
+ * @param {string} pathPoints - Space-separated "x,y" pairs for polyline (from buildPolylinePoints)
  * @param {number} zoom - Current zoom level (0.5 to 5)
  * @param {number} panX - Current pan offset on X axis
  * @param {number} panY - Current pan offset on Y axis
@@ -43,7 +43,8 @@ export default function MapBox({
   const activeFloor = destination?.floor || currentLocation?.floor || null;
   const showFloorPlan = destination !== null || currentLocation !== null;
 
-  // SVG dimensions for coordinate calculations
+  // SVG viewBox must match node coordinate system (campusDataNodes x,y)
+  // Floor plan SVG and nodes use the same space: viewBox="0 0 840.75 605.66"
   const svgWidth = 840.75;
   const svgHeight = 605.66;
 
@@ -138,34 +139,30 @@ export default function MapBox({
                   preserveAspectRatio="xMidYMid meet"
                   style={{ mixBlendMode: 'normal' }}
                 >
-                  {/* Navigation Path */}
+                  {/* Navigation Path - polyline with exact node coords, strictly on graph edges */}
                   {isNavigating && pathPoints && (
                     <motion.g
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      style={{ 
-                        transform: `scale(${1/zoom}) translate(0px, -10px)`, 
-                        transformOrigin: 'center center' 
-                      }}
                     >
                       {/* Path Background (lighter blue) */}
-                      <path
-                        d={pathPoints}
+                      <polyline
+                        points={pathPoints}
                         stroke="#93c5fd"
                         strokeWidth="4"
                         fill="none"
-                        strokeLinecap="butt"
-                        strokeLinejoin="miter"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         opacity={0.4}
                       />
                       {/* Animated Path (darker blue) */}
-                      <motion.path
-                        d={pathPoints}
+                      <motion.polyline
+                        points={pathPoints}
                         stroke="#3b82f6"
-                        strokeWidth="2"
+                        strokeWidth="4"
                         fill="none"
-                        strokeLinecap="butt"
-                        strokeLinejoin="miter"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         initial={{ pathLength: 0 }}
                         animate={{ pathLength: 1 }}
                         transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
