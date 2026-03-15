@@ -3,7 +3,7 @@ import { ZoomIn, ZoomOut, RotateCcw, Building2 } from 'lucide-react';
 import { Button } from './button';
 import { Badge } from './badge';
 import { buildings } from '../../data/campusData';
-import mapSvg from '../../../assets/GF -Main Building Drawing-Model.svg';
+import { mapAssets, mapViewBoxes } from '../../data/mapAssets';
 
 /**
  * MapBox Component
@@ -12,6 +12,7 @@ import mapSvg from '../../../assets/GF -Main Building Drawing-Model.svg';
  * Shows the floor plan when a destination or current location is selected,
  * displays navigation path when navigating, and shows building overview when no location is selected.
  * 
+ * @param {string} mapId - Active map ID whose SVG should be displayed
  * @param {object} destination - Selected destination location with x, y coordinates
  * @param {object} currentLocation - Selected current location with x, y coordinates
  * @param {boolean} isNavigating - Whether navigation is currently active
@@ -26,6 +27,7 @@ import mapSvg from '../../../assets/GF -Main Building Drawing-Model.svg';
  * @param {function} handleMouseDown - Callback for mouse drag pan
  */
 export default function MapBox({
+  mapId,
   destination,
   currentLocation,
   isNavigating,
@@ -41,12 +43,12 @@ export default function MapBox({
 }) {
   // Determine if floor plan should be shown
   const activeFloor = destination?.floor || currentLocation?.floor || null;
-  const showFloorPlan = destination !== null || currentLocation !== null;
+  const showFloorPlan = !!mapId && (destination !== null || currentLocation !== null);
 
-  // SVG viewBox must match node coordinate system (campusDataNodes x,y)
-  // Floor plan SVG and nodes use the same space: viewBox="0 0 840.75 605.66"
-  const svgWidth = 840.75;
-  const svgHeight = 605.66;
+  // SVG viewBox must match node coordinate system per map
+  const viewBoxConfig = mapViewBoxes[mapId] ?? mapViewBoxes.Main_GF;
+  const svgWidth = viewBoxConfig.width;
+  const svgHeight = viewBoxConfig.height;
 
   return (
     <motion.div
@@ -127,8 +129,8 @@ export default function MapBox({
               <div className="relative w-full h-full">
                 {/* Base Map Image */}
                 <img
-                  src={mapSvg}
-                  alt="Campus Map"
+                  src={mapAssets[mapId] ?? mapAssets.Main_GF}
+                  alt={mapId || 'Map'}
                   className="w-full h-full object-contain"
                 />
 

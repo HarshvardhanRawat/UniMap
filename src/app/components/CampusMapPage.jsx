@@ -10,7 +10,7 @@ import QuickAccess from './QuickAccess';
 import MapBox from './ui/MapBox';
 import { campusLocations } from '../data/LocationConvert';
 import { buildings, navigationNodes, navigationEdges } from '../data/campusData';
-import { dijkstra } from '../../utils/dijkstra';
+import { computeMultiMapRoute, buildNodesMap, buildGlobalGraph } from '../../utils/multiMapNavigation';
 import { buildPolylinePoints } from '../../utils/pathUtils';
 import { generateDetailedNavigationInstructions } from '../../utils/navigation_instructions';
 
@@ -41,6 +41,8 @@ export default function CampusMapPage({ userName, onLogout }) {
   const [isNavigating, setIsNavigating] = useState(false);
   const [pathPoints, setPathPoints] = useState('');
   const [navigationDirections, setNavigationDirections] = useState([]);
+  const [navigationSteps, setNavigationSteps] = useState([]);
+  const [activeStepIndex, setActiveStepIndex] = useState(0);
 
   // Map control state
   const [zoom, setZoom] = useState(1);
@@ -50,10 +52,9 @@ export default function CampusMapPage({ userName, onLogout }) {
   /**
    * Creates a map of node IDs to node objects for quick lookup
    */
-  const nodesMap = useMemo(() =>
-    Object.fromEntries(
-      navigationNodes.map(node => [node.id, node])
-    ), []
+  const nodesMap = useMemo(
+    () => buildNodesMap(navigationNodes),
+    [],
   );
 
   /**
@@ -61,33 +62,10 @@ export default function CampusMapPage({ userName, onLogout }) {
    * Graph uses only explicit navigation edges (corridor + room connections).
    * Corridor nodes are used for routing but not shown in directions.
    */
-  const graph = useMemo(() => {
-    const g = {};
-
-    // Initialize graph with all nodes
-    navigationNodes.forEach(node => {
-      g[node.id] = [];
-    });
-
-    // Add edges (bidirectional)
-    navigationEdges.forEach(edge => {
-      const from = edge.from_node ?? edge.from;
-      const to = edge.to_node ?? edge.to;
-      const w = edge.distance ?? edge.weight ?? 1;
-      
-      if (!from || !to) return;
-      
-      // Ensure nodes exist in graph
-      if (!g[from]) g[from] = [];
-      if (!g[to]) g[to] = [];
-      
-      // Add bidirectional edges
-      g[from].push({ node: to, weight: w });
-      g[to].push({ node: from, weight: w });
-    });
-
-    return g;
-  }, []);
+  const graph = useMemo(
+    () => buildGlobalGraph(navigationEdges),
+    [],
+  );
 
   /**
    * Handles destination selection
@@ -150,62 +128,78 @@ export default function CampusMapPage({ userName, onLogout }) {
   }, [isNavigating]);
 
   /**
-   * Starts navigation by calculating the shortest path between current location and destination.
-   * Uses Dijkstra's algorithm to find the path and generates turn-by-turn directions.
+   * Rebuilds polyline + instructions for a single step.
+   * This keeps rendering strictly per‑map.
+   */
+  const activateStep = useCallback(
+    (step) => {
+      if (!step || !step.path_nodes || step.path_nodes.length === 0) {
+        setPathPoints('');
+        setNavigationDirections([]);
+        return;
+      }
+
+      const stepPathWithCoords = step.path_nodes.filter((id) => nodesMap[id]);
+      if (stepPathWithCoords.length === 0) {
+        setPathPoints('');
+        setNavigationDirections([]);
+        return;
+      }
+
+      const points = buildPolylinePoints(stepPathWithCoords, nodesMap);
+      setPathPoints(points);
+
+      const rawInstructions = generateDetailedNavigationInstructions(
+        stepPathWithCoords,
+        nodesMap,
+        navigationEdges,
+      );
+      const directions = rawInstructions
+        .filter((i) => i.action !== 'error')
+        .map((i) => ({
+          direction: mapDirectionForIcon(i.direction),
+          instruction: [i.message, i.landmark].filter(Boolean).join(' '),
+          distance:
+            i.distanceInMeters != null ? `${i.distanceInMeters}m` : '',
+        }));
+      setNavigationDirections(directions);
+    },
+    [nodesMap],
+  );
+
+  /**
+   * Starts navigation by calculating a global shortest path, then
+   * segmenting it into per‑map steps.
    */
   const handleStartNavigation = useCallback(() => {
-    if (destination && currentLocation) {
-      // Path: FROM current location (where you are) TO destination (where you want to go)
-      const startNode = currentLocation.id;
-      const endNode = destination.id;
-      const path = dijkstra(graph, startNode, endNode);
+    if (!destination || !currentLocation) return;
 
-      if (path && path.length > 0) {
-        // Filter path to only include nodes with coordinates
-        const pathWithCoordinates = path.filter((nodeId) => nodesMap[nodeId]);
+    const result = computeMultiMapRoute(
+      navigationNodes,
+      navigationEdges,
+      currentLocation.id,
+      destination.id,
+    );
 
-        if (pathWithCoordinates.length > 0) {
-          // Build polyline points for pixel-perfect path (exact node coords, no smoothing)
-          const points = buildPolylinePoints(pathWithCoordinates, nodesMap);
-          setPathPoints(points);
-
-          // Generate navigation instructions (angle-based turns, edge types)
-          const rawInstructions = generateDetailedNavigationInstructions(
-            pathWithCoordinates,
-            nodesMap,
-            navigationEdges
-          );
-          const directions = rawInstructions
-            .filter((i) => i.action !== 'error')
-            .map((i) => ({
-              direction: mapDirectionForIcon(i.direction),
-              instruction: [i.message, i.landmark].filter(Boolean).join(' '),
-              distance: i.distanceInMeters != null ? `${i.distanceInMeters}m` : '',
-            }));
-          setNavigationDirections(directions);
-          setIsNavigating(true);
-        } else {
-          // Path found but no coordinates available
-          setPathPoints('');
-          setNavigationDirections([{
-            direction: 'straight',
-            instruction: 'Path found but coordinates unavailable for display',
-            distance: '',
-          }]);
-          setIsNavigating(true);
-        }
-      } else {
-        // No path found
-        setPathPoints('');
-        setNavigationDirections([{
+    if (!result || !result.steps || result.steps.length === 0) {
+      setPathPoints('');
+      setNavigationDirections([
+        {
           direction: 'straight',
           instruction: 'No path found between these locations',
           distance: '',
-        }]);
-        setIsNavigating(true);
-      }
+        },
+      ]);
+      setNavigationSteps([]);
+      setIsNavigating(true);
+      return;
     }
-  }, [destination, currentLocation, graph, nodesMap]);
+
+    setNavigationSteps(result.steps);
+    setActiveStepIndex(0);
+    setIsNavigating(true);
+    activateStep(result.steps[0]);
+  }, [destination, currentLocation, activateStep]);
 
   /**
    * Resets navigation state, clears all selections, and resets map to default zoom/pan
@@ -216,6 +210,8 @@ export default function CampusMapPage({ userName, onLogout }) {
     setCurrentLocation(null);
     setPathPoints('');
     setNavigationDirections([]);
+    setNavigationSteps([]);
+    setActiveStepIndex(0);
     setZoom(1);
     setPanX(0);
     setPanY(0);
@@ -273,6 +269,13 @@ export default function CampusMapPage({ userName, onLogout }) {
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   }, [panX, panY]);
+
+  const activeStep = navigationSteps[activeStepIndex] || null;
+  const activeMapId =
+    (isNavigating && activeStep?.map) ||
+    currentLocation?.map ||
+    destination?.map ||
+    'Main_GF';
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -344,21 +347,59 @@ export default function CampusMapPage({ userName, onLogout }) {
             <QuickAccess isNavigating={isNavigating} />
           </motion.div>
 
-          {/* Right Side - Map */}
-          <MapBox
-            destination={destination}
-            currentLocation={currentLocation}
-            isNavigating={isNavigating}
-            pathPoints={pathPoints}
-            zoom={zoom}
-            panX={panX}
-            panY={panY}
-            handleZoomIn={handleZoomIn}
-            handleZoomOut={handleZoomOut}
-            handleResetZoom={handleResetZoom}
-            handleWheel={handleWheel}
-            handleMouseDown={handleMouseDown}
-          />
+          {/* Right Side - Maps */}
+          {destination && currentLocation && !isNavigating ? (
+            // Pre‑navigation search view: show current map (left) and destination map (right)
+            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <MapBox
+                mapId={currentLocation.map}
+                destination={null}
+                currentLocation={currentLocation}
+                isNavigating={false}
+                pathPoints=""
+                zoom={zoom}
+                panX={panX}
+                panY={panY}
+                handleZoomIn={handleZoomIn}
+                handleZoomOut={handleZoomOut}
+                handleResetZoom={handleResetZoom}
+                handleWheel={handleWheel}
+                handleMouseDown={handleMouseDown}
+              />
+              <MapBox
+                mapId={destination.map}
+                destination={destination}
+                currentLocation={null}
+                isNavigating={false}
+                pathPoints=""
+                zoom={zoom}
+                panX={panX}
+                panY={panY}
+                handleZoomIn={handleZoomIn}
+                handleZoomOut={handleZoomOut}
+                handleResetZoom={handleResetZoom}
+                handleWheel={handleWheel}
+                handleMouseDown={handleMouseDown}
+              />
+            </div>
+          ) : (
+            // Navigation / default view: single active map
+            <MapBox
+              mapId={activeMapId}
+              destination={destination}
+              currentLocation={currentLocation}
+              isNavigating={isNavigating}
+              pathPoints={pathPoints}
+              zoom={zoom}
+              panX={panX}
+              panY={panY}
+              handleZoomIn={handleZoomIn}
+              handleZoomOut={handleZoomOut}
+              handleResetZoom={handleResetZoom}
+              handleWheel={handleWheel}
+              handleMouseDown={handleMouseDown}
+            />
+          )}
         </div>
       </main>
     </div>
