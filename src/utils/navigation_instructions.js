@@ -166,8 +166,25 @@ function formatInstruction(direction, distanceInMeters) {
 /**
  * Enhanced version with edge type information
  */
-function generateDetailedNavigationInstructions(path, nodes, edges) {
-  const basicInstructions = generateNavigationInstructions(path, nodes, edges);
+function buildUndirectedEdgeIndex(edges) {
+  if (!Array.isArray(edges)) return new Map();
+  const index = new Map();
+  edges.forEach((e) => {
+    const from = e.from_node ?? e.from;
+    const to = e.to_node ?? e.to;
+    if (!from || !to) return;
+    const keyA = `${from}|${to}`;
+    const keyB = `${to}|${from}`;
+    index.set(keyA, e);
+    index.set(keyB, e);
+  });
+  return index;
+}
+
+function generateDetailedNavigationInstructions(path, nodes, edgesOrIndex) {
+  const basicInstructions = generateNavigationInstructions(path, nodes);
+  const edgeIndex =
+    edgesOrIndex instanceof Map ? edgesOrIndex : buildUndirectedEdgeIndex(edgesOrIndex);
   
   // Add edge type information
   return basicInstructions.map((instruction, index) => {
@@ -176,11 +193,8 @@ function generateDetailedNavigationInstructions(path, nodes, edges) {
       const fromNode = instruction.from;
       const toNode = instruction.to;
       
-      if (edges && fromNode && toNode) {
-        const edge = edges.find(e => 
-          (e.from_node === fromNode && e.to_node === toNode) ||
-          (e.from_node === toNode && e.to_node === fromNode)
-        );
+      if (edgeIndex && fromNode && toNode) {
+        const edge = edgeIndex.get(`${fromNode}|${toNode}`);
         
         if (edge) {
           instruction.edgeType = edge.type;
@@ -268,6 +282,7 @@ function demonstrateNavigation() {
 
 export {
   generateNavigationInstructions,
+  buildUndirectedEdgeIndex,
   generateDetailedNavigationInstructions,
   formatInstructionsAsText,
   calculateAngle,

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, Building2, X } from 'lucide-react';
 import { Input } from './ui/input';
@@ -17,15 +17,21 @@ import { campusLocations } from '../data/LocationConvert';
  */
 export default function SearchDestination({ destination, onDestinationSelect, onDestinationClear }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQuery(searchQuery), 120);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
 
   // Filter locations based on search query (case-insensitive)
   const filteredLocations = useMemo(() =>
-    searchQuery.trim()
+    debouncedQuery.trim()
       ? campusLocations.filter((loc) =>
-          loc.name.toLowerCase().includes(searchQuery.toLowerCase())
+          (loc.searchName ?? loc.name.toLowerCase()).includes(debouncedQuery.toLowerCase())
         )
-      : [], [searchQuery]
+      : [], [debouncedQuery]
   );
 
   /**
@@ -86,7 +92,7 @@ export default function SearchDestination({ destination, onDestinationSelect, on
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-10 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-200 max-h-64 overflow-auto"
+            className="absolute z-10 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-200 max-h-64 overflow-auto overscroll-contain"
           >
             {filteredLocations.slice(0, 6).map((location) => (
               <button

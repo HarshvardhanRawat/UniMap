@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Navigation, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
@@ -12,7 +12,7 @@ import { campusLocations } from '../data/LocationConvert';
 import { buildings, navigationNodes, navigationEdges } from '../data/campusData';
 import { computeMultiMapRoute, buildNodesMap, buildGlobalGraph } from '../../utils/multiMapNavigation';
 import { buildPolylinePoints } from '../../utils/pathUtils';
-import { generateDetailedNavigationInstructions } from '../../utils/navigation_instructions';
+import { buildUndirectedEdgeIndex, generateDetailedNavigationInstructions } from '../../utils/navigation_instructions';
 
 /** Maps navigation direction to icon key (left, right, straight) */
 function mapDirectionForIcon(direction) {
@@ -48,6 +48,23 @@ export default function CampusMapPage({ userName, onLogout }) {
   const [zoom, setZoom] = useState(1);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
+  const zoomRef = useRef(zoom);
+  const panRef = useRef({ x: panX, y: panY });
+  const gestureRef = useRef({
+    pointers: new Map(),
+    dragStart: null,
+    pinchStart: null,
+    rafId: 0,
+    pending: null,
+  });
+
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  useEffect(() => {
+    panRef.current = { x: panX, y: panY };
+  }, [panX, panY]);
 
   /**
    * Creates a map of node IDs to node objects for quick lookup
@@ -64,6 +81,10 @@ export default function CampusMapPage({ userName, onLogout }) {
    */
   const graph = useMemo(
     () => buildGlobalGraph(navigationEdges),
+    [],
+  );
+  const edgeIndex = useMemo(
+    () => buildUndirectedEdgeIndex(navigationEdges),
     [],
   );
 
@@ -153,7 +174,7 @@ export default function CampusMapPage({ userName, onLogout }) {
       const rawInstructions = generateDetailedNavigationInstructions(
         stepPathWithCoords,
         nodesMap,
-        navigationEdges,
+        edgeIndex,
       );
       const directions = rawInstructions
         .filter((i) => i.action !== 'error')
@@ -165,7 +186,7 @@ export default function CampusMapPage({ userName, onLogout }) {
         }));
       setNavigationDirections(directions);
     },
-    [nodesMap],
+    [nodesMap, edgeIndex],
   );
 
   /**
@@ -269,34 +290,128 @@ export default function CampusMapPage({ userName, onLogout }) {
   }, []);
 
   /**
-   * Handles mouse wheel zoom
+   * Handles mouse wheel zoom (avoid scroll-jacking).
    */
   const handleWheel = useCallback((e) => {
+    if (!(e.ctrlKey || e.metaKey)) return;
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
     setZoom(prev => Math.max(0.5, Math.min(5, prev * delta)));
   }, []);
 
   /**
-   * Handles mouse drag for panning the map
+   * Pointer-based pan + pinch-zoom with rAF throttling.
    */
-  const handleMouseDown = useCallback((e) => {
-    const startX = e.clientX - panX;
-    const startY = e.clientY - panY;
+  const commitGestureUpdate = useCallback((next) => {
+    gestureRef.current.pending = next;
+    if (gestureRef.current.rafId) return;
+    gestureRef.current.rafId = requestAnimationFrame(() => {
+      const pending = gestureRef.current.pending;
+      gestureRef.current.pending = null;
+      gestureRef.current.rafId = 0;
+      if (!pending) return;
 
-    const handleMouseMove = (ev) => {
-      setPanX(ev.clientX - startX);
-      setPanY(ev.clientY - startY);
-    };
+      if (pending.zoom != null) setZoom(pending.zoom);
+      if (pending.panX != null) setPanX(pending.panX);
+      if (pending.panY != null) setPanY(pending.panY);
+    });
+  }, []);
 
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
+  const handlePointerDown = useCallback((e) => {
+    const el = e.currentTarget;
+    if (el?.setPointerCapture) el.setPointerCapture(e.pointerId);
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  }, [panX, panY]);
+    const pointers = gestureRef.current.pointers;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pointers.size === 1) {
+      gestureRef.current.dragStart = {
+        pointerId: e.pointerId,
+        x: e.clientX,
+        y: e.clientY,
+        panX: panRef.current.x,
+        panY: panRef.current.y,
+      };
+      gestureRef.current.pinchStart = null;
+      return;
+    }
+
+    if (pointers.size === 2) {
+      const [a, b] = Array.from(pointers.values());
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const midX = (a.x + b.x) / 2;
+      const midY = (a.y + b.y) / 2;
+      gestureRef.current.pinchStart = {
+        dist,
+        zoom: zoomRef.current,
+        panX: panRef.current.x,
+        panY: panRef.current.y,
+        midX,
+        midY,
+      };
+      gestureRef.current.dragStart = null;
+    }
+  }, []);
+
+  const handlePointerMove = useCallback((e) => {
+    const pointers = gestureRef.current.pointers;
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pointers.size >= 2 && gestureRef.current.pinchStart) {
+      const [a, b] = Array.from(pointers.values());
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const midX = (a.x + b.x) / 2;
+      const midY = (a.y + b.y) / 2;
+
+      const start = gestureRef.current.pinchStart;
+      const ratio = dist / start.dist;
+      const nextZoom = Math.max(0.5, Math.min(5, start.zoom * ratio));
+      const scaleRatio = nextZoom / start.zoom;
+
+      // Keep pinch midpoint stable in screen space:
+      const nextPanX = start.panX * scaleRatio + midX * (1 - scaleRatio);
+      const nextPanY = start.panY * scaleRatio + midY * (1 - scaleRatio);
+
+      commitGestureUpdate({ zoom: nextZoom, panX: nextPanX, panY: nextPanY });
+      return;
+    }
+
+    if (pointers.size === 1 && gestureRef.current.dragStart) {
+      const start = gestureRef.current.dragStart;
+      if (start.pointerId !== e.pointerId) return;
+      const dx = e.clientX - start.x;
+      const dy = e.clientY - start.y;
+      commitGestureUpdate({ panX: start.panX + dx, panY: start.panY + dy });
+    }
+  }, [commitGestureUpdate]);
+
+  const handlePointerUpOrCancel = useCallback((e) => {
+    const pointers = gestureRef.current.pointers;
+    if (pointers.has(e.pointerId)) pointers.delete(e.pointerId);
+
+    if (pointers.size === 1) {
+      const remainingId = Array.from(pointers.keys())[0];
+      const remaining = pointers.get(remainingId);
+      if (remaining) {
+        gestureRef.current.dragStart = {
+          pointerId: remainingId,
+          x: remaining.x,
+          y: remaining.y,
+          panX: panRef.current.x,
+          panY: panRef.current.y,
+        };
+      }
+      gestureRef.current.pinchStart = null;
+    } else if (pointers.size === 0) {
+      gestureRef.current.dragStart = null;
+      gestureRef.current.pinchStart = null;
+    }
+  }, []);
 
   const activeStep = navigationSteps[activeStepIndex] || null;
   const activeMapId =
@@ -419,7 +534,10 @@ export default function CampusMapPage({ userName, onLogout }) {
                 handleZoomOut={handleZoomOut}
                 handleResetZoom={handleResetZoom}
                 handleWheel={handleWheel}
-                handleMouseDown={handleMouseDown}
+                handlePointerDown={handlePointerDown}
+                handlePointerMove={handlePointerMove}
+                handlePointerUp={handlePointerUpOrCancel}
+                handlePointerCancel={handlePointerUpOrCancel}
               />
             ) : (
               <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -436,7 +554,10 @@ export default function CampusMapPage({ userName, onLogout }) {
                   handleZoomOut={handleZoomOut}
                   handleResetZoom={handleResetZoom}
                   handleWheel={handleWheel}
-                  handleMouseDown={handleMouseDown}
+                  handlePointerDown={handlePointerDown}
+                  handlePointerMove={handlePointerMove}
+                  handlePointerUp={handlePointerUpOrCancel}
+                  handlePointerCancel={handlePointerUpOrCancel}
                 />
                 <MapBox
                   mapId={destination.map}
@@ -451,7 +572,10 @@ export default function CampusMapPage({ userName, onLogout }) {
                   handleZoomOut={handleZoomOut}
                   handleResetZoom={handleResetZoom}
                   handleWheel={handleWheel}
-                  handleMouseDown={handleMouseDown}
+                  handlePointerDown={handlePointerDown}
+                  handlePointerMove={handlePointerMove}
+                  handlePointerUp={handlePointerUpOrCancel}
+                  handlePointerCancel={handlePointerUpOrCancel}
                 />
               </div>
             )
@@ -474,7 +598,10 @@ export default function CampusMapPage({ userName, onLogout }) {
               handleZoomOut={handleZoomOut}
               handleResetZoom={handleResetZoom}
               handleWheel={handleWheel}
-              handleMouseDown={handleMouseDown}
+              handlePointerDown={handlePointerDown}
+              handlePointerMove={handlePointerMove}
+              handlePointerUp={handlePointerUpOrCancel}
+              handlePointerCancel={handlePointerUpOrCancel}
             />
           )}
         </div>

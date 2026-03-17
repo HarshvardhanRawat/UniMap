@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { Button } from './ui/button';
-import logo from '../../assets/logo.png';
+import logoPng from '../../assets/logo.png';
+import logoWebp from '../../assets/logo.webp';
 
 /**
  * LoginPage Component
@@ -42,7 +43,10 @@ export default function LoginPage({ onLogin }) {
               className="inline-flex items-center justify-center mb-4"
             >
   
-              <img src={logo} alt="UniMap Logo" className="w-48 h-auto" />
+              <picture>
+                <source srcSet={logoWebp} type="image/webp" />
+                <img src={logoPng} alt="UniMap Logo" className="w-48 h-auto" decoding="async" />
+              </picture>
 
             </motion.div>
             {/* Logo Ends Here */}

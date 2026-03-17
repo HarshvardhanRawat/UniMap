@@ -1,9 +1,10 @@
-import { motion, AnimatePresence } from 'motion/react';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { ZoomIn, ZoomOut, RotateCcw, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './button';
 import { Badge } from './badge';
 import { buildings } from '../../data/campusData';
-import { mapAssets, mapViewBoxes } from '../../data/mapAssets';
+import { getMapAsset, preloadMapAsset, mapViewBoxes } from '../../data/mapAssets';
 
 /**
  * MapBox Component
@@ -43,14 +44,35 @@ export default function MapBox({
   handleZoomOut,
   handleResetZoom,
   handleWheel,
-  handleMouseDown,
+  handlePointerDown,
+  handlePointerMove,
+  handlePointerUp,
+  handlePointerCancel,
 }) {
+  const prefersReducedMotion = useReducedMotion();
+  const [mapSrc, setMapSrc] = useState('');
   // Determine if floor plan should be shown
   const activeFloor = destination?.floor || currentLocation?.floor || null;
   const showFloorPlan = !!mapId && (destination !== null || currentLocation !== null);
   const shouldShowDestination = !!destination && destination.map === mapId;
   const shouldShowCurrentLocation =
     !!currentLocation && currentLocation.map === mapId;
+
+  useEffect(() => {
+    let cancelled = false;
+    getMapAsset(mapId).then((url) => {
+      if (!cancelled) setMapSrc(url);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [mapId]);
+
+  useEffect(() => {
+    // Best-effort prefetch likely-next floor maps.
+    if (mapId === 'Main_GF') preloadMapAsset('Main_FF');
+    if (mapId === 'Main_FF') preloadMapAsset('Main_SF');
+  }, [mapId]);
 
   // SVG viewBox must match node coordinate system per map
   const viewBoxConfig = mapViewBoxes[mapId] ?? mapViewBoxes.Main_GF;
@@ -64,7 +86,7 @@ export default function MapBox({
       transition={{ delay: 0.3 }}
       className="lg:col-span-2"
     >
-      <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-6 border border-gray-100 h-[600px] lg:h-full lg:min-h-[700px]">
+      <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-4 sm:p-6 border border-gray-100 min-h-[420px] h-[70svh] sm:h-[600px] lg:h-full lg:min-h-[700px]">
         {/* Map Header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg text-gray-900">Campus Map</h2>
@@ -156,9 +178,12 @@ export default function MapBox({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing"
+              className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing touch-none"
               onWheel={handleWheel}
-              onMouseDown={handleMouseDown}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerCancel}
               style={{
                 transform: `scale(${zoom}) translate(${panX / zoom}px, ${panY / zoom}px)`,
                 transformOrigin: 'center center',
@@ -167,9 +192,10 @@ export default function MapBox({
               <div className="relative w-full h-full">
                 {/* Base Map Image */}
                 <img
-                  src={mapAssets[mapId] ?? mapAssets.Main_GF}
+                  src={mapSrc}
                   alt={mapId || 'Map'}
                   className="w-full h-full object-contain"
+                  decoding="async"
                 />
 
                 {/* SVG Overlay for Markers and Path */}
@@ -196,17 +222,28 @@ export default function MapBox({
                         opacity={0.4}
                       />
                       {/* Animated Path (darker blue) */}
-                      <motion.polyline
-                        points={pathPoints}
-                        stroke="#3b82f6"
-                        strokeWidth="4"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
-                      />
+                      {prefersReducedMotion ? (
+                        <polyline
+                          points={pathPoints}
+                          stroke="#3b82f6"
+                          strokeWidth="4"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      ) : (
+                        <motion.polyline
+                          points={pathPoints}
+                          stroke="#3b82f6"
+                          strokeWidth="4"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          initial={{ pathLength: 0 }}
+                          animate={{ pathLength: 1 }}
+                          transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
+                        />
+                      )}
                     </motion.g>
                   )}
 
@@ -229,21 +266,23 @@ export default function MapBox({
                         opacity="0.3"
                       />
                       {/* Animated Pulsing Circle */}
-                      <motion.circle
-                        cx={destination.x}
-                        cy={destination.y}
-                        r="8"
-                        fill="#3b82f6"
-                        opacity="0.3"
-                        animate={{
-                          r: [8, 16, 8],
-                          opacity: [0.3, 0, 0.3]
-                        }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 2
-                        }}
-                      />
+                      {!prefersReducedMotion ? (
+                        <motion.circle
+                          cx={destination.x}
+                          cy={destination.y}
+                          r="8"
+                          fill="#3b82f6"
+                          opacity="0.3"
+                          animate={{
+                            r: [8, 16, 8],
+                            opacity: [0.3, 0, 0.3]
+                          }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 2
+                          }}
+                        />
+                      ) : null}
                       {/* Center Dot */}
                       <circle
                         cx={destination.x}
@@ -285,21 +324,23 @@ export default function MapBox({
                         opacity="0.3"
                       />
                       {/* Animated Pulsing Circle */}
-                      <motion.circle
-                        cx={currentLocation.x}
-                        cy={currentLocation.y}
-                        r="8"
-                        fill="#10b981"
-                        opacity="0.3"
-                        animate={{
-                          r: [8, 16, 8],
-                          opacity: [0.3, 0, 0.3]
-                        }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 1.5
-                        }}
-                      />
+                      {!prefersReducedMotion ? (
+                        <motion.circle
+                          cx={currentLocation.x}
+                          cy={currentLocation.y}
+                          r="8"
+                          fill="#10b981"
+                          opacity="0.3"
+                          animate={{
+                            r: [8, 16, 8],
+                            opacity: [0.3, 0, 0.3]
+                          }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 1.5
+                          }}
+                        />
+                      ) : null}
                       {/* Center Dot */}
                       <circle
                         cx={currentLocation.x}
@@ -326,8 +367,8 @@ export default function MapBox({
             </motion.div>
           ) : (
             // Building Overview Grid (when no location selected)
-            <div className="absolute inset-0 p-8">
-              <div className="grid grid-cols-3 gap-4 h-full">
+            <div className="absolute inset-0 p-4 sm:p-6 lg:p-8">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 h-full">
                 {buildings.map((building, idx) => (
                   <motion.div
                     key={building.id}

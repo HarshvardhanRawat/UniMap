@@ -9,7 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import logo from '../../assets/logo.png';
+import logoPng from '../../assets/logo.png';
+import logoWebp from '../../assets/logo.webp';
 
 /**
  * Header Component
@@ -31,7 +32,10 @@ export default function Header({ userName, onLogout }) {
         <div className="flex items-center justify-between">
           {/* Logo Section */}
           <div className="flex items-center gap-3">
-            <img src={logo} alt="UniMap Logo" className="h-10 w-auto" />
+            <picture>
+              <source srcSet={logoWebp} type="image/webp" />
+              <img src={logoPng} alt="UniMap Logo" className="h-10 w-auto" decoding="async" />
+            </picture>
           </div>
 
           {/* User Menu Dropdown */}

@@ -1,26 +1,32 @@
-import campusSvg from '../../assets/CampusMap.svg';
-import mainGfSvg from '../../assets/Main_GF.svg';
-import mainFfSvg from '../../assets/Main_FF.svg';
-import mainSfSvg from '../../assets/Main_SF.svg';
-
-// AI building SVGs can be added here when available:
-// import aiGfSvg from '../../assets/AI_GF.svg';
-// ...
-
 /**
- * Map ID -> imported SVG asset
- * Central place to wire map identifiers to their visual representation.
+ * Map asset loading (lazy + cached).
+ * Keeps rendering behavior the same while reducing initial bundle cost.
  */
-export const mapAssets = {
-  Campus_Map: campusSvg,
-  Main_GF: mainGfSvg,
-  Main_FF: mainFfSvg,
-  Main_SF: mainSfSvg,
-  // AI_GF: aiGfSvg,
-  // AI_FF: aiFfSvg,
-  // AI_SF: aiSfSvg,
-  // AI_TF: aiTfSvg,
+const assetLoaders = {
+  Campus_Map: () => import('../../assets/CampusMap.svg'),
+  Main_GF: () => import('../../assets/Main_GF.svg'),
+  Main_FF: () => import('../../assets/Main_FF.svg'),
+  Main_SF: () => import('../../assets/Main_SF.svg'),
+  // AI_GF: () => import('../../assets/AI_GF.svg'),
+  // AI_FF: () => import('../../assets/AI_FF.svg'),
+  // AI_SF: () => import('../../assets/AI_SF.svg'),
+  // AI_TF: () => import('../../assets/AI_TF.svg'),
 };
+
+const assetCache = new Map();
+
+export async function getMapAsset(mapId) {
+  const key = mapId in assetLoaders ? mapId : 'Main_GF';
+  if (assetCache.has(key)) return assetCache.get(key);
+  const mod = await assetLoaders[key]();
+  const url = mod?.default ?? mod;
+  assetCache.set(key, url);
+  return url;
+}
+
+export function preloadMapAsset(mapId) {
+  void getMapAsset(mapId);
+}
 
 /**
  * Map ID -> SVG viewBox configuration

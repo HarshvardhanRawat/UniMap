@@ -32,9 +32,13 @@ export const campusLocations = navigationNodes
     const buildingMeta =
       mapMeta && mapMeta.building ? buildingsById[mapMeta.building] : null;
 
+    const name = n.name || parsed.name; // Use explicit name if available, otherwise parsed
+    const searchName = String(name || '').toLowerCase();
+
     return {
       id: n.id,
-      name: n.name || parsed.name, // Use explicit name if available, otherwise parsed
+      name,
+      searchName,
       map: n.map || null,
       building: buildingMeta?.name || (mapMeta?.type === 'campus' ? 'Campus' : 'MITS - DU'),
       floor: typeof mapMeta?.floor === 'number' ? mapMeta.floor : null,
