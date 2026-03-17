@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { ZoomIn, ZoomOut, RotateCcw, Building2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './button';
 import { Badge } from './badge';
 import { buildings } from '../../data/campusData';
@@ -32,6 +32,10 @@ export default function MapBox({
   currentLocation,
   isNavigating,
   pathPoints,
+  stepCount = 0,
+  activeStepIndex = 0,
+  onPrevStep,
+  onNextStep,
   zoom,
   panX,
   panY,
@@ -44,6 +48,9 @@ export default function MapBox({
   // Determine if floor plan should be shown
   const activeFloor = destination?.floor || currentLocation?.floor || null;
   const showFloorPlan = !!mapId && (destination !== null || currentLocation !== null);
+  const shouldShowDestination = !!destination && destination.map === mapId;
+  const shouldShowCurrentLocation =
+    !!currentLocation && currentLocation.map === mapId;
 
   // SVG viewBox must match node coordinate system per map
   const viewBoxConfig = mapViewBoxes[mapId] ?? mapViewBoxes.Main_GF;
@@ -63,11 +70,42 @@ export default function MapBox({
           <h2 className="text-lg text-gray-900">Campus Map</h2>
           <div className="flex items-center gap-2">
             {/* Destination Badge */}
-            {destination && (
+            {shouldShowDestination && (
               <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
                 {destination.building}
               </Badge>
             )}
+
+            {/* Step controls (for multi-step navigation across floors/maps) */}
+            {isNavigating && stepCount > 1 ? (
+              <div className="flex items-center gap-1">
+                <Badge variant="secondary" className="text-xs">
+                  Step {activeStepIndex + 1}/{stepCount}
+                </Badge>
+                <Button
+                  onClick={onPrevStep}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0 rounded-lg"
+                  disabled={!onPrevStep || activeStepIndex <= 0}
+                  aria-label="Previous step"
+                  title="Previous step"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={onNextStep}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 w-8 p-0 rounded-lg"
+                  disabled={!onNextStep || activeStepIndex >= stepCount - 1}
+                  aria-label="Next step"
+                  title="Next step"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : null}
             
             {/* Zoom Controls */}
             {(showFloorPlan && activeFloor) || destination || currentLocation ? (
@@ -173,7 +211,7 @@ export default function MapBox({
                   )}
 
                   {/* Destination Marker */}
-                  {destination && destination.x !== undefined && destination.y !== undefined && (
+                  {shouldShowDestination && destination.x !== undefined && destination.y !== undefined && (
                     <motion.g
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
@@ -229,7 +267,7 @@ export default function MapBox({
                   )}
 
                   {/* Current Location Marker */}
-                  {currentLocation && currentLocation.x !== undefined && currentLocation.y !== undefined && (
+                  {shouldShowCurrentLocation && currentLocation.x !== undefined && currentLocation.y !== undefined && (
                     <motion.g
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}

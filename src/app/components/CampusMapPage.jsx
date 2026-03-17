@@ -219,6 +219,33 @@ export default function CampusMapPage({ userName, onLogout }) {
   }, []);
 
   /**
+   * Jump between segmented navigation steps (e.g., floor transitions).
+   */
+  const jumpToStep = useCallback((nextIndex) => {
+    setActiveStepIndex((prevIndex) => {
+      const clampedIndex = Math.max(0, Math.min(nextIndex, navigationSteps.length - 1));
+      if (clampedIndex === prevIndex) return prevIndex;
+
+      const nextStep = navigationSteps[clampedIndex];
+      if (nextStep) {
+        setZoom(1);
+        setPanX(0);
+        setPanY(0);
+        activateStep(nextStep);
+      }
+      return clampedIndex;
+    });
+  }, [activateStep, navigationSteps]);
+
+  const handlePrevStep = useCallback(() => {
+    jumpToStep(activeStepIndex - 1);
+  }, [activeStepIndex, jumpToStep]);
+
+  const handleNextStep = useCallback(() => {
+    jumpToStep(activeStepIndex + 1);
+  }, [activeStepIndex, jumpToStep]);
+
+  /**
    * Zoom in handler (max zoom: 5x)
    */
   const handleZoomIn = useCallback(() => {
@@ -436,6 +463,10 @@ export default function CampusMapPage({ userName, onLogout }) {
               currentLocation={currentLocation}
               isNavigating={isNavigating}
               pathPoints={pathPoints}
+              stepCount={navigationSteps.length}
+              activeStepIndex={activeStepIndex}
+              onPrevStep={handlePrevStep}
+              onNextStep={handleNextStep}
               zoom={zoom}
               panX={panX}
               panY={panY}
