@@ -122,6 +122,7 @@ export default function CampusMapPage({ userName, onLogout }) {
    */
   const handleCurrentLocationClear = useCallback(() => {
     setCurrentLocation(null);
+    setDestination(null);
     if (isNavigating) {
       handleResetNavigation();
     }
@@ -307,12 +308,37 @@ export default function CampusMapPage({ userName, onLogout }) {
                   onCurrentLocationClear={handleCurrentLocationClear}
                 />
 
-                {/* Destination second (TO) */}
-                <SearchDestination
-                  destination={destination}
-                  onDestinationSelect={handleDestinationSelect}
-                  onDestinationClear={handleDestinationClear}
-                />
+                {/* Destination second (TO) - only after current location is set */}
+                <AnimatePresence initial={false} mode="popLayout">
+                  {currentLocation ? (
+                    <motion.div
+                      key="destination-search"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <SearchDestination
+                        destination={destination}
+                        onDestinationSelect={handleDestinationSelect}
+                        onDestinationClear={handleDestinationClear}
+                      />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="destination-hint"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.2 }}
+                      className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3"
+                    >
+                      <p className="text-sm text-gray-600">
+                        Set your current location to unlock destination search.
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Start Navigation Button */}
                 <AnimatePresence>
@@ -349,11 +375,13 @@ export default function CampusMapPage({ userName, onLogout }) {
 
           {/* Right Side - Maps */}
           {destination && currentLocation && !isNavigating ? (
-            // Pre‑navigation search view: show current map (left) and destination map (right)
-            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+            // Pre‑navigation search view:
+            // - same floor/map: show a single combined map with both markers
+            // - different floors/maps: show current map (left) and destination map (right)
+            currentLocation.map === destination.map ? (
               <MapBox
-                mapId={currentLocation.map}
-                destination={null}
+                mapId={destination.map}
+                destination={destination}
                 currentLocation={currentLocation}
                 isNavigating={false}
                 pathPoints=""
@@ -366,22 +394,40 @@ export default function CampusMapPage({ userName, onLogout }) {
                 handleWheel={handleWheel}
                 handleMouseDown={handleMouseDown}
               />
-              <MapBox
-                mapId={destination.map}
-                destination={destination}
-                currentLocation={null}
-                isNavigating={false}
-                pathPoints=""
-                zoom={zoom}
-                panX={panX}
-                panY={panY}
-                handleZoomIn={handleZoomIn}
-                handleZoomOut={handleZoomOut}
-                handleResetZoom={handleResetZoom}
-                handleWheel={handleWheel}
-                handleMouseDown={handleMouseDown}
-              />
-            </div>
+            ) : (
+              <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <MapBox
+                  mapId={currentLocation.map}
+                  destination={null}
+                  currentLocation={currentLocation}
+                  isNavigating={false}
+                  pathPoints=""
+                  zoom={zoom}
+                  panX={panX}
+                  panY={panY}
+                  handleZoomIn={handleZoomIn}
+                  handleZoomOut={handleZoomOut}
+                  handleResetZoom={handleResetZoom}
+                  handleWheel={handleWheel}
+                  handleMouseDown={handleMouseDown}
+                />
+                <MapBox
+                  mapId={destination.map}
+                  destination={destination}
+                  currentLocation={null}
+                  isNavigating={false}
+                  pathPoints=""
+                  zoom={zoom}
+                  panX={panX}
+                  panY={panY}
+                  handleZoomIn={handleZoomIn}
+                  handleZoomOut={handleZoomOut}
+                  handleResetZoom={handleResetZoom}
+                  handleWheel={handleWheel}
+                  handleMouseDown={handleMouseDown}
+                />
+              </div>
+            )
           ) : (
             // Navigation / default view: single active map
             <MapBox
