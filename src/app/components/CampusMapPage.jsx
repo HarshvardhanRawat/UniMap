@@ -430,14 +430,14 @@ export default function CampusMapPage({ userName, onLogout }) {
       <Header userName={userName} onLogout={onLogout} />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
-        <div className="grid lg:grid-cols-3 gap-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+        <div className="grid lg:grid-cols-3 gap-4 lg:gap-6">
           {/* Left Sidebar - Search and Navigation */}
           <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="lg:col-span-1 space-y-6"
+            className="lg:col-span-1 space-y-4 lg:space-y-6"
           >
             {/* Route Planning Card */}
             <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-6 border border-gray-100">
@@ -468,6 +468,7 @@ export default function CampusMapPage({ userName, onLogout }) {
                         destination={destination}
                         onDestinationSelect={handleDestinationSelect}
                         onDestinationClear={handleDestinationClear}
+                        currentLocation={currentLocation}
                       />
                     </motion.div>
                   ) : (

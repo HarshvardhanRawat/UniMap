@@ -36,6 +36,7 @@ export default defineConfig(({ mode }) => {
       target: 'es2019',
       chunkSizeWarningLimit: 1500,
       minify: 'esbuild',
+      sourcemap: false,
     },
   };
 });

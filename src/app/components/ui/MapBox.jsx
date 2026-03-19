@@ -172,11 +172,11 @@ export default function MapBox({
       transition={{ delay: 0.3 }}
       className="lg:col-span-2"
     >
-      <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-4 sm:p-6 border border-gray-100 min-h-[420px] h-[70svh] sm:h-[600px] lg:h-full lg:min-h-[700px]">
+      <div className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-3 sm:p-5 border border-gray-100 min-h-[360px] h-[66svh] sm:h-[600px] lg:h-full lg:min-h-[700px] flex flex-col">
         {/* Map Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
           <h2 className="text-lg text-gray-900">Campus Map</h2>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Destination Badge */}
             {shouldShowDestination && (
               <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">
@@ -186,7 +186,7 @@ export default function MapBox({
 
             {/* Step controls (for multi-step navigation across floors/maps) */}
             {isNavigating && stepCount > 1 ? (
-              <div className="flex items-center gap-1">
+              <div className="flex flex-wrap items-center gap-1">
                 <Badge variant="secondary" className="text-xs">
                   Step {activeStepIndex + 1}/{stepCount}
                 </Badge>
@@ -217,7 +217,7 @@ export default function MapBox({
             
             {/* Zoom Controls */}
             {(showFloorPlan && activeFloor) || destination || currentLocation ? (
-              <div className="flex items-center gap-1 ml-2">
+              <div className="flex flex-wrap items-center gap-1 sm:ml-2">
                 <Button
                   onClick={handleZoomOut}
                   variant="outline"
@@ -259,7 +259,7 @@ export default function MapBox({
         {/* Map Container */}
         <div
           ref={containerRef}
-          className="relative w-full h-[calc(100%-3rem)] bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden border border-gray-200"
+          className="relative w-full flex-1 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden border border-gray-200"
         >
           {showFloorPlan ? (
             // Floor Plan View with Navigation
