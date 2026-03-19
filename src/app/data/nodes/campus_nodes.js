@@ -98,25 +98,25 @@ export const navigationNodes = [
     type: "entry",
     connects_to: { map: "Main_GF", node: "intersectionLibraryPath_Corridor06" }
   },
-  {
-    id: "ENTRY05",
-    name: "AI Building Entry (East)",
-    map: "Campus_Map",
-    x: 683.8217, y: 257.6539,
-    type: "entry",
-    connects_to: { map: "AI_GF", node: "ai_entry_gf" }
-  },
-  {
-    id: "ENTRY06",
-    name: "AI Building Entry (South)",
-    map: "Campus_Map",
-    x: 565.7575, y: 257.6539,
-    type: "entry",
-    connects_to: { map: "AI_GF", node: "ai_entry_gf" }
-  },
+  // {
+  //   id: "ENTRY05",
+  //   name: "Architecture Building Entry (East)",
+  //   map: "Campus_Map",
+  //   x: 683.8217, y: 257.6539,
+  //   type: "entry",
+  //   connects_to: { map: "AI_GF", node: "ai_entry_gf" }
+  // },
+  // {
+  //   id: "ENTRY06",
+  //   name: "Architecture Building Entry (South)",
+  //   map: "Campus_Map",
+  //   x: 565.7575, y: 257.6539,
+  //   type: "entry",
+  //   connects_to: { map: "AI_GF", node: "ai_entry_gf" }
+  // },
   {
     id: "ENTRY07",
-    name: "AI Building Entry (North)",
+    name: "Architecture Building Entry (North)",
     map: "Campus_Map",
     x: 624.3588, y: 152.198,
     type: "entry",

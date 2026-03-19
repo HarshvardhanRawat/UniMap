@@ -230,4 +230,65 @@ export const navigationNodes = [
   { id: "room_Language_Lab", name: "Language Laboratory",       map: "Main_FF", x: 68.8569,  y: 418.93,   type: "room" },
   { id: "room_MaleWashroom_FF",   name: "Male Washroom",        map: "Main_FF", x: 182.9221, y: 337.5387, type: "room" },
   { id: "room_FemaleWashroom_FF", name: "Female Washroom",      map: "Main_FF", x: 203.5634, y: 328.5387, type: "room" },
+
+  // ─── CORRIDOR 16 EAST WING – EE / ECE DEPT (y≈247–255) ───────────────────────
+
+  { id: "cabin_Dr_Vikas_Mahor",            name: "Dr. Vikas Mahor",                                          map: "Main_FF", x: 631.3569, y: 247.2452, type: "room" },
+  { id: "cabin_Dr_Laxmi_HOD_EE",           name: "Dr. Laxmi Shrivastava – HOD Dept. of EE",                  map: "Main_FF", x: 659.0898, y: 247.2452, type: "room" },
+  { id: "cabin_Dr_R_Jenkin_Suji",          name: "Dr. R. Jenkin Suji",                                       map: "Main_FF", x: 652.4888, y: 254.9408, type: "room" },
+  { id: "cabin_Dr_Prateek_Bhadauria",      name: "Dr. Prateek Bhadauria",                                    map: "Main_FF", x: 659.0898, y: 254.9408, type: "room" },
+
+  // ─── CORRIDOR 16 CENTRE-EAST – CSE / IT DEPT (y≈238–255) ─────────────────────
+
+  { id: "cabin_Dr_Ravindra_Narwaria",      name: "Dr. Ravindra Pratap Narwaria",                             map: "Main_FF", x: 518.0171, y: 254.9408, type: "room" },
+  { id: "cabin_Prof_Madhav_Singh",         name: "Prof. Madhav Singh",                                       map: "Main_FF", x: 524.833,  y: 254.9408, type: "room" },
+  { id: "cabin_Dr_Shailendra_Singh",       name: "Dr. Shailendra Singh",                                     map: "Main_FF", x: 523.8711, y: 238.3104, type: "room" },
+  { id: "cabin_Dr_Kumar_Gaurav",           name: "Dr. Kumar Gaurav",                                         map: "Main_FF", x: 523.8711, y: 238.3104, type: "room" },
+  { id: "cabin_Dr_Hemant_Choubey",         name: "Dr. Hemant Choubey",                                       map: "Main_FF", x: 533.4649, y: 236.829,  type: "room" },
+  { id: "cabin_Prof_Pavitra_Pathak",       name: "Prof. Pavitra Pathak",                                     map: "Main_FF", x: 503.596,  y: 247.2452, type: "room" },
+
+  // ─── CORRIDOR 16 LEFT WING – MECH DEPT (y≈216–256, x≈20–57) ──────────────────
+
+  { id: "cabin_Prof_Vaibhav_Shivhare",     name: "Prof. Vaibhav Shivhare",                                   map: "Main_FF", x: 20.7917,  y: 220.7669, type: "room" },
+  { id: "cabin_Dr_Nitin_Upadhyay",         name: "Dr. Nitin Upadhyay",                                       map: "Main_FF", x: 20.7917,  y: 216.2714, type: "room" },
+  { id: "cabin_Dr_Chandra_S_Malvi",        name: "Dr. Chandra S. Malvi",                                     map: "Main_FF", x: 34.0254,  y: 219.2669, type: "room" },
+  { id: "cabin_Dr_Surendra_Chourasiya",    name: "Dr. Surendra K. Chourasiya",                               map: "Main_FF", x: 34.0254,  y: 223.7244, type: "room" },
+  { id: "cabin_Dr_Amit_Aherwar",           name: "Dr. Amit Aherwar",                                         map: "Main_FF", x: 34.0254,  y: 236.8584, type: "room" },
+  { id: "cabin_Dr_Nidhi_Humnekar",         name: "Dr. Nidhi Humnekar",                                       map: "Main_FF", x: 25.8462,  y: 256.18,   type: "room" },
+  { id: "cabin_Dr_Barkha_Tiwari",          name: "Dr. Barkha Tiwari",                                        map: "Main_FF", x: 25.8462,  y: 256.18,   type: "room" },
+  { id: "cabin_Dr_Divya_Chaturvedi",       name: "Dr. Divya Chaturvedi",                                     map: "Main_FF", x: 34.7241,  y: 256.18,   type: "room" },
+  { id: "cabin_Dr_Minakshi_Dahiya",        name: "Dr. Minakshi Dahiya",                                      map: "Main_FF", x: 34.7241,  y: 256.18,   type: "room" },
+  { id: "cabin_Dr_Vijay_S_Sharma",         name: "Dr. Vijay S. Sharma",                                      map: "Main_FF", x: 57.2319,  y: 256.18,   type: "room" },
+  { id: "cabin_Dr_Anand_Pawar",            name: "Dr. Anand Pawar",                                          map: "Main_FF", x: 57.2319,  y: 256.18,   type: "room" },
+
+  // ─── CORRIDOR 14 SIDE – EE / ME FACULTY (y≈348–356) ──────────────────────────
+
+  { id: "cabin_Dr_Arzoo_Choubey",          name: "Dr. Arzoo Choubey",                                        map: "Main_FF", x: 78.2482,  y: 355.5115, type: "room" },
+  { id: "cabin_Dr_Sanjeev_Khanna",         name: "Dr. Sanjeev Khanna",                                       map: "Main_FF", x: 78.2482,  y: 348.6908, type: "room" },
+
+  // ─── CORRIDOR 11 WEST – FACULTY CABINS (y≈461–474) ───────────────────────────
+
+  { id: "cabin_Dr_DK_Jain",               name: "Dr. D. K. Jain",                                           map: "Main_FF", x: 207.0525, y: 461.1582, type: "room" },
+  { id: "cabin_Er_Vivek_Sharma",           name: "Er. Vivek Sharma",                                         map: "Main_FF", x: 230.7264, y: 461.1582, type: "room" },
+  { id: "cabin_Dr_Kuldeep_Tiwari",         name: "Dr. Kuldeep Kumar Tiwari",                                 map: "Main_FF", x: 52.7645,  y: 474.4501, type: "room" },
+  { id: "cabin_Dr_JK_Muthele",             name: "Dr. J. K. Muthele",                                        map: "Main_FF", x: 52.7645,  y: 474.4501, type: "room" },
+  { id: "cabin_Dr_DK_Mishra",              name: "Dr. D. K. Mishra",                                         map: "Main_FF", x: 30.8351,  y: 470.3376, type: "room" },
+  { id: "cabin_Dr_SK_Bharadwaj",           name: "Dr. S. K. Bharadwaj",                                      map: "Main_FF", x: 30.8351,  y: 470.3376, type: "room" },
+  { id: "cabin_Dr_VP_Shinde",              name: "Dr. V.P. Shinde",                                          map: "Main_FF", x: 30.8351,  y: 461.2887, type: "room" },
+
+  // ─── CORRIDOR 20 / 21 WING – CSE / IT LABS & FACULTY (Architecture corridor) ─
+
+  { id: "cabin_Dr_Punit_Johari",           name: "Dr. Punit Kumar Johari",                                   map: "Main_FF", x: 645.933,  y: 90.4211,  type: "room" },
+  { id: "cabin_Ranjeev_Kumar_Singh",       name: "Ranjeev Kumar Singh",                                      map: "Main_FF", x: 634.4873, y: 99.6542,  type: "room" },
+  { id: "cabin_Dr_Sanjiv_Sharma",          name: "Dr. Sanjiv Sharma",                                        map: "Main_FF", x: 492.8631, y: 83.9735,  type: "room" },
+  { id: "cabin_Dr_Akhilesh_Tiwari",        name: "Dr. Akhilesh Tiwari",                                      map: "Main_FF", x: 514.1556, y: 100.9531, type: "room" },
+  { id: "cabin_Aashi_Singh_Bhadouria",     name: "Aashi Singh Bhadouria",                                    map: "Main_FF", x: 494.787,  y: 121.0101, type: "room" },
+  { id: "cabin_Manisha_Pathak",            name: "Manisha Pathak",                                           map: "Main_FF", x: 494.787,  y: 121.0101, type: "room" },
+  { id: "cabin_Dr_Ranjeet_Singh",          name: "Dr. Ranjeet Kumar Singh",                                  map: "Main_FF", x: 513.4275, y: 142.7669, type: "room" },
+  { id: "cabin_Dr_Sanjay_Jadon",           name: "Dr. Sanjay Singh Jadon",                                   map: "Main_FF", x: 547.1286, y: 30.2096,  type: "room" },
+  { id: "cabin_Dr_Akansha_Soni",           name: "Dr. Akansha Soni",                                         map: "Main_FF", x: 533.7264, y: 34.9921,  type: "room" },
+  { id: "cabin_Dr_Kuldeep_Tripathi",       name: "Dr. Kuldeep Narayan Tripathi",                             map: "Main_FF", x: 521.7822, y: 44.9408,  type: "room" },
+  { id: "cabin_Dr_Rohit_Agrawal",          name: "Dr. Rohit Agrawal",                                        map: "Main_FF", x: 521.7822, y: 44.9408,  type: "room" },
+  { id: "cabin_Ar_Jaspreet_Walia",         name: "Ar. Jaspreet Walia",                                       map: "Main_FF", x: 599.3677, y: 30.2096,  type: "room" },
+
 ]

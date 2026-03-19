@@ -49,4 +49,30 @@ export const navigationNodes = [
   { id: "room_J208",  name: "Computer Lab J208",       map: "Main_SF", x: 702.3056, y: 232.5918, type: "room" },
   { id: "room_J209",  name: "J209",                   map: "Main_SF", x: 711.5502, y: 345.5681, type: "room" },
   { id: "room_FemaleWashroom_SF", name: "Female Washroom", map: "Main_SF", x: 563.2218, y: 136.1108, type: "room" },
+
+  // ─── CORRIDOR 23 EAST WING – ET DEPT (x≈629–711, y≈136–162) ─────────────────
+
+  { id: "cabin_Dr_Vandana_HOD_ET",        name: "Dr. Vandana Vikas Thakare – HOD Dept. of ET",               map: "Main_SF", x: 629.6739, y: 136.1108, type: "room" },
+  { id: "cabin_Dr_Yogesh_Himanshu",        name: "Dr. Yogesh Kumar & Dr. Himanshu Singh",                    map: "Main_SF", x: 608.413,  y: 136.1108, type: "room" },
+  { id: "cabin_Prof_DK_Parsediya",         name: "Prof. D. K. Parsediya (NSS)",                              map: "Main_SF", x: 677.2826, y: 162.0673, type: "room" },
+  { id: "cabin_Prof_Pooja_Sahoo",          name: "Prof. Pooja Sahoo",                                        map: "Main_SF", x: 660.326,  y: 162.0673, type: "room" },
+
+  // ─── CORRIDOR 23 CENTRE WEST – ET / CSE DEPT (x≈298–373, y≈99–162) ──────────
+
+  { id: "cabin_Dr_Nidhi_Saxena",           name: "Dr. Nidhi Saxena – J203",                                  map: "Main_SF", x: 298.5652, y: 135.7195, type: "room" },
+  { id: "cabin_Dr_Rahul_Dubey_ET",         name: "Dr. Rahul Dubey (ET)",                                     map: "Main_SF", x: 345.7826, y: 124.1108, type: "room" },
+  { id: "cabin_Dr_Varun_Sharma",           name: "Dr. Varun Sharma",                                         map: "Main_SF", x: 349.8548, y: 161.676,  type: "room" },
+  { id: "cabin_Dr_Deepak_Batham",          name: "Dr. Deepak Batham",                                        map: "Main_SF", x: 334.4199, y: 161.676,  type: "room" },
+  { id: "cabin_Dr_Karuna_Markam",          name: "Dr. Karuna Markam",                                        map: "Main_SF", x: 357.2608, y: 99.1652,  type: "room" },
+  { id: "cabin_Dr_Shubhi_Kansal",          name: "Dr. Shubhi Kansal",                                        map: "Main_SF", x: 373.2174, y: 98.2847,  type: "room" },
+
+  // ─── CORRIDOR 23 CENTRE – LABS ────────────────────────────────────────────────
+
+  { id: "cabin_Communication_Lab_J202",    name: "Communication Lab – J202",                                 map: "Main_SF", x: 219.2608, y: 135.85,   type: "room" },
+  { id: "cabin_Project_Lab_J204",          name: "Project Lab – J204",                                       map: "Main_SF", x: 376.1087, y: 230.4586, type: "room" },
+  { id: "cabin_Computer_Lab_J208",         name: "Computer Lab – J208",                                      map: "Main_SF", x: 702.3056, y: 232.5918, type: "room" },
+
+  // ─── CORRIDOR 23 WEST END ─────────────────────────────────────────────────────
+
+  { id: "cabin_Exam_Room_J201",            name: "Exam Room – J201",                                         map: "Main_SF", x: 67.4347,  y: 136.1108, type: "room" },
 ]

@@ -194,5 +194,76 @@ export const navigationNodes = [
   { id: "room_DirectorsOffice", name: "Director's Office",            map: "Main_GF", x: 512.7124, y: 425.1018, type: "room" },
   { id: "room_MaleWashroom",    name: "Male Washroom",                map: "Main_GF", x: 457.3326, y: 389.5684, type: "room" },
   { id: "room_FacultyRC",       name: "J020 – Faculty Resource Centre", map: "Main_GF", x: 457.3326, y: 401.3612, type: "room" },
-  { id: "room_LadiesWashroom",  name: "Ladies Washroom",              map: "Main_GF", x: 190.4539, y: 356.9616, type: "room" },
+  { id: "room_LadiesWashroom",  name: "Female Washroom",              map: "Main_GF", x: 190.4539, y: 356.9616, type: "room" },
+
+  // ─── COMPUTER SCIENCE DEPARTMENT WING (Corridor 06, east section, y≈267–275) ──
+
+  { id: "cabin_Dr_Manish_Dixit",      name: "Dr. Manish Dixit – Dean PR / HOD CSE / Student Grievance Cell", map: "Main_GF", x: 598.383,  y: 253.8019, type: "room" },
+  { id: "cabin_Project_Research_Lab", name: "Project Research Lab",                                           map: "Main_GF", x: 610.317,  y: 253.8019, type: "room" },
+  { id: "cabin_Girls_Common_Room",    name: "Girls Common Room",                                              map: "Main_GF", x: 631.4555, y: 267.7135, type: "room" },
+  { id: "cabin_Dr_RS_Jadon",          name: "Dr. R.S. Jadon – Dean Student Administration / Anti-Ragging Cell / Office Proctorial Board", map: "Main_GF", x: 680.0805, y: 267.7135, type: "room" },
+  { id: "cabin_Dr_Smita_Parte",       name: "Dr. Smita Parte",                                               map: "Main_GF", x: 698.251,  y: 267.7135, type: "room" },
+  { id: "cabin_Prof_Jaimala_Jha",     name: "Prof. Jaimala Jha",                                             map: "Main_GF", x: 705.2498, y: 267.7135, type: "room" },
+  { id: "cabin_Prof_Khushboo_Agarwal",name: "Prof. Khushboo Agarwal",                                        map: "Main_GF", x: 700.0931, y: 274.6766, type: "room" },
+  { id: "cabin_Prof_Mahesh_Parmar",   name: "Prof. Mahesh Parmar",                                           map: "Main_GF", x: 706.3876, y: 274.6766, type: "room" },
+
+  // ─── CORRIDOR 06 WEST-CENTRE (y≈267–275) ──────────────────────────────────────
+
+  { id: "cabin_Dr_RK_Gupta",          name: "Dr. R.K. Gupta",                                                map: "Main_GF", x: 574.4413, y: 267.2642, type: "room" },
+  { id: "cabin_Dr_Anshu_Chaturvedi",  name: "Dr. Anshu Chaturvedi – Girls Grievance Cell / Disability Support Unit", map: "Main_GF", x: 576.4232, y: 274.9012, type: "room" },
+  { id: "cabin_Prof_Parul_Saxena",    name: "Prof. Parul Saxena",                                            map: "Main_GF", x: 582.8306, y: 274.9012, type: "room" },
+  { id: "cabin_MOOC_Center",          name: "MOOC Center",                                                   map: "Main_GF", x: 475.1047, y: 267.2642, type: "room" },
+
+  // ─── CORRIDOR 02 SPUR ROOMS (x≈457) ──────────────────────────────────────────
+
+  { id: "cabin_004",                  name: "Room 004",                                                      map: "Main_GF", x: 457.2691, y: 282.0328, type: "room" },
+  { id: "cabin_003",                  name: "Room 003",                                                      map: "Main_GF", x: 457.396,  y: 318.084,  type: "room" },
+
+  // ─── CIVIL ENGINEERING DEPARTMENT (Corridor 03 / 05 zone) ────────────────────
+
+  { id: "cabin_Dr_Pratesh_Jayaswal",  name: "Dr. Pratesh Jayaswal",                                          map: "Main_GF", x: 325.8381, y: 267.1519, type: "room" },
+  { id: "cabin_Dr_Sanjay_Tiwari_CE",  name: "Dr. Sanjay Tiwari",                                             map: "Main_GF", x: 322.4948, y: 282.2293, type: "room" },
+  { id: "cabin_IC_Lab",               name: "IC Lab",                                                        map: "Main_GF", x: 343.8415, y: 267.3079, type: "room" },
+  { id: "cabin_Dr_SK_Jain",           name: "Dr. S.K. Jain",                                                 map: "Main_GF", x: 322.5983, y: 363.5879, type: "room" },
+  { id: "cabin_J022_Prof_Bhadoria",   name: "J022 – Prof. Gautam Bhadoria / Environmental Engineering Lab",  map: "Main_GF", x: 322.5983, y: 389.3722, type: "room" },
+  { id: "cabin_Prof_Aditya_Agarwal",  name: "Prof. Aditya Kumar Agarwal",                                    map: "Main_GF", x: 332.628,  y: 360.2609, type: "room" },
+  { id: "cabin_Dr_Anjula_Gaur",       name: "Dr. Anjula Gaur",                                               map: "Main_GF", x: 332.628,  y: 375.2918, type: "room" },
+  { id: "cabin_Dr_Sanjay_Tiwari_HOD", name: "Dr. Sanjay Tiwari – HOD Dept. of Civil Engineering",           map: "Main_GF", x: 352.9131, y: 356.4095, type: "room" },
+  { id: "cabin_J025_Chemical_Dept",   name: "J025 – Chemical Engineering Department",                        map: "Main_GF", x: 223.0077, y: 356.5498, type: "room" },
+  { id: "cabin_J021_Chemical_Eng",    name: "J021 – Dr. Shourabh S. Raghuvanshi / Prof. Swati Gupta / Dept. of Chemical Engineering", map: "Main_GF", x: 322.8126, y: 425.1145, type: "room" },
+  { id: "cabin_Prof_Anish_Jacob",     name: "Prof. Anish P. Jacob",                                          map: "Main_GF", x: 322.8126, y: 460.9037, type: "room" },
+
+  // ─── CORRIDOR 06 WEST END / MECHANICAL DEPARTMENT ─────────────────────────────
+
+  { id: "cabin_J012_Fluid_Lab",       name: "J012 – Fluid Mechanics & Hydraulic Machines Lab",               map: "Main_GF", x: 186.9435, y: 267.1519, type: "room" },
+  { id: "cabin_J014_CAD_CAM_Lab",     name: "J014 – Computer Aided Design & Manufacturing Lab",              map: "Main_GF", x: 272.3229, y: 267.1519, type: "room" },
+  { id: "cabin_Dr_Manoj_Gaur",        name: "Dr. Manoj Kumar Gaur – Dean Research",                         map: "Main_GF", x: 150.8004, y: 267.3203, type: "room" },
+  { id: "cabin_Prof_Vedansh",         name: "Prof. Vedansh Chaturvedi",                                      map: "Main_GF", x: 130.5826, y: 263.8387, type: "room" },
+  { id: "cabin_Dr_Jyoti_Vimal",       name: "Dr. Jyoti Vimal",                                               map: "Main_GF", x: 118.1641, y: 237.1258, type: "room" },
+  { id: "cabin_Dr_CS_Malvi_HOD_Mech", name: "Dr. Chandra Shekhar Malvi – HOD Dept. of Mechanical Engineering", map: "Main_GF", x: 130.5712, y: 243.6752, type: "room" },
+  { id: "cabin_Prof_RP_Kori",         name: "Prof. R.P. Kori",                                               map: "Main_GF", x: 118.1641, y: 225.6764, type: "room" },
+  { id: "cabin_Prof_Bhupendra_Pandey",name: "Prof. Bhupendra Pandey",                                        map: "Main_GF", x: 117.8208, y: 208.6389, type: "room" },
+  { id: "cabin_Dynamics_Machine_Lab", name: "Dynamics & Machine Lab",                                        map: "Main_GF", x: 124.4389, y: 205.9434, type: "room" },
+
+  // ─── CORRIDOR 04 / ELECTRICAL DEPT WING ──────────────────────────────────────
+
+  { id: "cabin_Dr_Shishir_Dixit_HOD", name: "Dr. Shishir Dixit – HOD Dept. of Electrical Engineering",      map: "Main_GF", x: 162.5359, y: 460.7165, type: "room" },
+  { id: "cabin_Dr_Monica_Bhadoriya",  name: "Dr. Monica Chauhan Bhadoriya",                                  map: "Main_GF", x: 170.9787, y: 367.1069, type: "room" },
+
+  // ─── CORRIDOR 01 SOUTH WING ───────────────────────────────────────────────────
+
+  { id: "cabin_J005_BEEE_Lab",        name: "J005 – BEEE Lab",                                               map: "Main_GF", x: 164.5673, y: 487.5022, type: "room" },
+  { id: "cabin_Dr_Vijay_Bhuria",      name: "Dr. Vijay Bhuria – Chief Warden",                               map: "Main_GF", x: 147.6818, y: 491.7898, type: "room" },
+  { id: "cabin_Dr_Sulochana_Wadhwani",name: "Dr. Sulochana Wadhwani",                                        map: "Main_GF", x: 128.5935, y: 478.5736, type: "room" },
+  { id: "cabin_Dr_PK_Singhal",        name: "Dr. P.K. Singhal",                                              map: "Main_GF", x: 289.8909, y: 478.5596, type: "room" },
+
+  // ─── DIRECTOR'S OFFICE / ADMIN WING ──────────────────────────────────────────
+
+  { id: "cabin_Directors_Office",     name: "Director's Office",                                             map: "Main_GF", x: 518.0432, y: 425.1018, type: "room" },
+
+  // ─── ARCHITECTURE WING (Corridor 09 / 10 zone) ────────────────────────────────
+
+  { id: "cabin_Dr_Anjali_Patil",      name: "Dr. Anjali S. Patil",                                           map: "Main_GF", x: 603.0631, y: 53.0112,  type: "room" },
+  { id: "cabin_Dept_Architecture",    name: "Department of Architecture & Planning",                         map: "Main_GF", x: 591.0035, y: 57.5972,  type: "room" },
+  { id: "cabin_Ar_Namita_Pranshi",    name: "Ar. Namita Gupta / Ar. Pranshi Jain",                           map: "Main_GF", x: 573.7655, y: 64.6727,  type: "room" },
 ]
