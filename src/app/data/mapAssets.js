@@ -7,6 +7,10 @@ const assetLoaders = {
   Main_GF: () => import('../../assets/Main_GF.svg'),
   Main_FF: () => import('../../assets/Main_FF.svg'),
   Main_SF: () => import('../../assets/Main_SF.svg'),
+  AI_GF: () => import('../../assets/AI_GF.svg'),
+  AI_FF: () => import('../../assets/AI_FF.svg'),
+  AI_SF: () => import('../../assets/AI_SF.svg'),
+  // AI_TF: () => import('../../assets/AI_TF.svg'),
   // AI_GF: () => import('../../assets/AI_GF.svg'),
   // AI_FF: () => import('../../assets/AI_FF.svg'),
   // AI_SF: () => import('../../assets/AI_SF.svg'),
@@ -38,6 +42,10 @@ export const mapViewBoxes = {
   Main_GF: { width: 848.4096, height: 609.5946 },
   Main_FF: { width: 696.4, height: 576.6927 },
   Main_SF: { width: 743.9135, height: 482.3806 },
+  AI_GF: { width: 842,   height: 595    },
+  AI_FF: { width: 705.6, height: 283.32 },
+  AI_SF: { width: 719.4, height: 220.32 },
+  // AI_TF: { width: 800, height: 600 },
 };
 
 

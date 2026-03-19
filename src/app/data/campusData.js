@@ -21,6 +21,9 @@ import { navigationNodes as campus_nodes } from './nodes/campus_nodes';
 import { navigationNodes as main_gf_nodes } from './nodes/main_gf_nodes';
 import { navigationNodes as main_ff_nodes } from './nodes/main_ff_nodes';
 import { navigationNodes as main_sf_nodes } from './nodes/main_sf_nodes';
+import { navigationNodes as ai_gf_nodes } from './nodes/ai_gf_nodes';
+import { navigationNodes as ai_ff_nodes } from './nodes/ai_ff_nodes';
+import { navigationNodes as ai_sf_nodes } from './nodes/ai_sf_nodes';
 // AI building floors – keep imports optional/extendable
 // If these files are added later, they can simply be imported and registered.
 
@@ -29,6 +32,11 @@ import { navigationEdges as campus_edges } from './edges/campus_edges';
 import { navigationEdges as main_gf_edges } from './edges/main_gf_edges';
 import { navigationEdges as main_ff_edges } from './edges/main_ff_edges';
 import { navigationEdges as main_sf_edges } from './edges/main_sf_edges';
+import { navigationEdges as ai_gf_edges } from './edges/ai_gf_edges';
+import { navigationEdges as ai_ff_edges } from './edges/ai_ff_edges';
+import { navigationEdges as ai_sf_edges } from './edges/ai_sf_edges';
+// AI building floors – keep imports optional/extendable
+// If these files are added later, they can simply be imported and registered.
 
 export { maps, buildings };
 
@@ -56,6 +64,21 @@ export const mapDatasets = {
     id: 'Main_SF',
     nodes: main_sf_nodes,
     edges: main_sf_edges,
+  },
+  AI_GF: {
+    id: 'AI_GF',
+    nodes: ai_gf_nodes,
+    edges: ai_gf_edges,
+  },
+  AI_FF: {
+    id: 'AI_FF',
+    nodes: ai_ff_nodes,
+    edges: ai_ff_edges,
+  },
+  AI_SF: {
+    id: 'AI_SF',
+    nodes: ai_sf_nodes,
+    edges: ai_sf_edges,
   },
   // AI building floors will be registered here as soon as their
   // nodes/edges datasets and SVGs are available (AI_GF, AI_FF, AI_SF, AI_TF).
