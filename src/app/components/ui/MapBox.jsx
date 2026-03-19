@@ -1,10 +1,41 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { ZoomIn, ZoomOut, RotateCcw, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './button';
 import { Badge } from './badge';
 import { buildings } from '../../data/campusData';
 import { getMapAsset, preloadMapAsset, mapViewBoxes } from '../../data/mapAssets';
+
+function parsePoints(pointsString) {
+  if (!pointsString || typeof pointsString !== 'string') return [];
+  return pointsString
+    .trim()
+    .split(/\s+/)
+    .map((pair) => {
+      const [xStr, yStr] = pair.split(',');
+      const x = Number(xStr);
+      const y = Number(yStr);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+      return { x, y };
+    })
+    .filter(Boolean);
+}
+
+function computeBbox(points) {
+  if (!points || points.length === 0) return null;
+  let minX = points[0].x;
+  let maxX = points[0].x;
+  let minY = points[0].y;
+  let maxY = points[0].y;
+  for (let i = 1; i < points.length; i++) {
+    const p = points[i];
+    if (p.x < minX) minX = p.x;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.y > maxY) maxY = p.y;
+  }
+  return { minX, minY, maxX, maxY, width: maxX - minX, height: maxY - minY };
+}
 
 /**
  * MapBox Component
@@ -33,6 +64,8 @@ export default function MapBox({
   currentLocation,
   isNavigating,
   pathPoints,
+  autoFitNonce,
+  onRequestView,
   stepCount = 0,
   activeStepIndex = 0,
   onPrevStep,
@@ -51,6 +84,8 @@ export default function MapBox({
 }) {
   const prefersReducedMotion = useReducedMotion();
   const [mapSrc, setMapSrc] = useState('');
+  const containerRef = useRef(null);
+  const lastAutoFitRef = useRef(null);
   // Determine if floor plan should be shown
   const activeFloor = destination?.floor || currentLocation?.floor || null;
   const showFloorPlan = !!mapId && (destination !== null || currentLocation !== null);
@@ -78,6 +113,57 @@ export default function MapBox({
   const viewBoxConfig = mapViewBoxes[mapId] ?? mapViewBoxes.Main_GF;
   const svgWidth = viewBoxConfig.width;
   const svgHeight = viewBoxConfig.height;
+
+  const pathBbox = useMemo(() => {
+    if (!isNavigating || !pathPoints) return null;
+    const pts = parsePoints(pathPoints);
+    return computeBbox(pts);
+  }, [isNavigating, pathPoints]);
+
+  useEffect(() => {
+    if (!isNavigating) return;
+    if (!pathBbox) return;
+    if (!onRequestView) return;
+    if (autoFitNonce == null) return;
+    if (lastAutoFitRef.current === autoFitNonce) return;
+
+    const el = containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+    if (!(w > 0 && h > 0)) return;
+
+    // Map SVG coords -> screen coords (zoom=1, pan=0) with preserveAspectRatio="meet".
+    const baseScale = Math.min(w / svgWidth, h / svgHeight) || 1;
+    const offsetX = (w - svgWidth * baseScale) / 2;
+    const offsetY = (h - svgHeight * baseScale) / 2;
+
+    const minX = pathBbox.minX * baseScale + offsetX;
+    const maxX = pathBbox.maxX * baseScale + offsetX;
+    const minY = pathBbox.minY * baseScale + offsetY;
+    const maxY = pathBbox.maxY * baseScale + offsetY;
+
+    const bboxW = Math.max(1, maxX - minX);
+    const bboxH = Math.max(1, maxY - minY);
+    const pad = Math.max(24, Math.min(w, h) * 0.06);
+    const availW = Math.max(1, w - 2 * pad);
+    const availH = Math.max(1, h - 2 * pad);
+
+    const nextZoom = Math.max(0.5, Math.min(5, Math.min(availW / bboxW, availH / bboxH)));
+
+    const bboxCenterX = (minX + maxX) / 2;
+    const bboxCenterY = (minY + maxY) / 2;
+    const centerX = w / 2;
+    const centerY = h / 2;
+
+    // With transformOrigin center and scale+translate, this pan centers the route.
+    const nextPanX = -nextZoom * (bboxCenterX - centerX);
+    const nextPanY = -nextZoom * (bboxCenterY - centerY);
+
+    lastAutoFitRef.current = autoFitNonce;
+    onRequestView({ zoom: nextZoom, panX: nextPanX, panY: nextPanY });
+  }, [autoFitNonce, isNavigating, onRequestView, pathBbox, svgHeight, svgWidth]);
 
   return (
     <motion.div
@@ -171,7 +257,10 @@ export default function MapBox({
         </div>
 
         {/* Map Container */}
-        <div className="relative w-full h-[calc(100%-3rem)] bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden border border-gray-200">
+        <div
+          ref={containerRef}
+          className="relative w-full h-[calc(100%-3rem)] bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden border border-gray-200"
+        >
           {showFloorPlan ? (
             // Floor Plan View with Navigation
             <motion.div

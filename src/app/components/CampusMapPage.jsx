@@ -43,6 +43,7 @@ export default function CampusMapPage({ userName, onLogout }) {
   const [navigationDirections, setNavigationDirections] = useState([]);
   const [navigationSteps, setNavigationSteps] = useState([]);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const [autoFitNonce, setAutoFitNonce] = useState(0);
 
   // Map control state
   const [zoom, setZoom] = useState(1);
@@ -221,6 +222,7 @@ export default function CampusMapPage({ userName, onLogout }) {
     setActiveStepIndex(0);
     setIsNavigating(true);
     activateStep(result.steps[0]);
+    setAutoFitNonce((n) => n + 1);
   }, [destination, currentLocation, activateStep]);
 
   /**
@@ -237,6 +239,7 @@ export default function CampusMapPage({ userName, onLogout }) {
     setZoom(1);
     setPanX(0);
     setPanY(0);
+    setAutoFitNonce((n) => n + 1);
   }, []);
 
   /**
@@ -253,6 +256,7 @@ export default function CampusMapPage({ userName, onLogout }) {
         setPanX(0);
         setPanY(0);
         activateStep(nextStep);
+        setAutoFitNonce((n) => n + 1);
       }
       return clampedIndex;
     });
@@ -527,6 +531,12 @@ export default function CampusMapPage({ userName, onLogout }) {
                 currentLocation={currentLocation}
                 isNavigating={false}
                 pathPoints=""
+                autoFitNonce={autoFitNonce}
+                onRequestView={({ zoom: nextZoom, panX: nextPanX, panY: nextPanY }) => {
+                  setZoom(nextZoom);
+                  setPanX(nextPanX);
+                  setPanY(nextPanY);
+                }}
                 zoom={zoom}
                 panX={panX}
                 panY={panY}
@@ -547,6 +557,12 @@ export default function CampusMapPage({ userName, onLogout }) {
                   currentLocation={currentLocation}
                   isNavigating={false}
                   pathPoints=""
+                  autoFitNonce={autoFitNonce}
+                  onRequestView={({ zoom: nextZoom, panX: nextPanX, panY: nextPanY }) => {
+                    setZoom(nextZoom);
+                    setPanX(nextPanX);
+                    setPanY(nextPanY);
+                  }}
                   zoom={zoom}
                   panX={panX}
                   panY={panY}
@@ -565,6 +581,12 @@ export default function CampusMapPage({ userName, onLogout }) {
                   currentLocation={null}
                   isNavigating={false}
                   pathPoints=""
+                  autoFitNonce={autoFitNonce}
+                  onRequestView={({ zoom: nextZoom, panX: nextPanX, panY: nextPanY }) => {
+                    setZoom(nextZoom);
+                    setPanX(nextPanX);
+                    setPanY(nextPanY);
+                  }}
                   zoom={zoom}
                   panX={panX}
                   panY={panY}
@@ -591,6 +613,12 @@ export default function CampusMapPage({ userName, onLogout }) {
               activeStepIndex={activeStepIndex}
               onPrevStep={handlePrevStep}
               onNextStep={handleNextStep}
+              autoFitNonce={autoFitNonce}
+              onRequestView={({ zoom: nextZoom, panX: nextPanX, panY: nextPanY }) => {
+                setZoom(nextZoom);
+                setPanX(nextPanX);
+                setPanY(nextPanY);
+              }}
               zoom={zoom}
               panX={panX}
               panY={panY}

@@ -132,3 +132,21 @@ The architecture can be adapted for:
 ---
 
 UniMap is not just a visual map — it is a structured navigation system built on graph theory and practical frontend engineering.
+
+## Production Deployment
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+2. Build for production:
+   ```bash
+   npm run build
+   ```
+3. Preview the production build:
+   ```bash
+   npm run preview
+   ```
+4. Serve the `dist/` folder from your preferred static host (Netlify, Vercel, GitHub Pages, or any static web server).
+
+> For Docker deployment, use a minimal Nginx container serving `dist/` after build.

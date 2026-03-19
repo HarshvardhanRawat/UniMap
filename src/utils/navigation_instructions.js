@@ -248,38 +248,6 @@ function formatInstructionsAsText(instructions) {
   return text;
 }
 
-/**
- * Example Usage
- */
-function demonstrateNavigation() {
-  // Example with sample data
-  const sampleNodes = {
-    'ENTRY01': { id: 'ENTRY01', x: 384.5073, y: 428.0715 },
-    'corridor01_01': { id: 'corridor01_01', x: 384.5073, y: 394.5587 },
-    'intersectionCorridor01_02': { id: 'intersectionCorridor01_02', x: 395.9856, y: 394.5587 },
-    'corridor02_01': { id: 'corridor02_01', x: 396.0834, y: 377.4128 },
-    'intersectionCorridor02_Director_sOffice': { id: 'intersectionCorridor02_Director_sOffice', x: 396.0834, y: 361.1674 },
-    'Director_sOffice': { id: 'Director_sOffice', x: 424.7621, y: 361.1022 },
-  };
-  
-  const samplePath = [
-    'ENTRY01',
-    'corridor01_01',
-    'intersectionCorridor01_02',
-    'corridor02_01',
-    'intersectionCorridor02_Director_sOffice',
-    'Director_sOffice'
-  ];
-  
-  const instructions = generateNavigationInstructions(samplePath, sampleNodes);
-  
-  console.log('Navigation Instructions:');
-  console.log('='.repeat(50));
-  console.log(formatInstructionsAsText(instructions));
-  
-  return instructions;
-}
-
 export {
   generateNavigationInstructions,
   buildUndirectedEdgeIndex,
@@ -287,5 +255,5 @@ export {
   formatInstructionsAsText,
   calculateAngle,
   getTurnDirection,
-  calculateDistance
+  calculateDistance,
 };
