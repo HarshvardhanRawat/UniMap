@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      allowedHosts: ['unimap-oadc.onrender.com'],
       proxy: {
         // Google OAuth endpoints served by your backend (e.g. Express + Passport)
         '/auth': {
