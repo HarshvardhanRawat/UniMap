@@ -203,7 +203,7 @@ export default function CampusMapPage({ userName, onLogout }) {
         navigationEdges,
         currentLocation.id,
         destination.id,
-        { signal: controller.signal, yieldEvery: 2000 },
+      { signal: controller.signal, yieldEvery: 2000, includeFullPath: false },
       );
 
       if (controller.signal.aborted || requestId !== routeRequestIdRef.current) return;

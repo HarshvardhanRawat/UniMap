@@ -106,22 +106,72 @@ export function dijkstraDistances(graph, start) {
  *
  * @param {object} graph
  * @param {string} start
- * @param {{ signal?: AbortSignal, yieldEvery?: number }} [options]
+ * @param {{
+ *   signal?: AbortSignal,
+ *   yieldEvery?: number,
+ *   targetNodeIds?: string[]|undefined
+ * }} [options]
  * @returns {Promise<Record<string, number>>}
  */
 export async function dijkstraDistancesAsync(graph, start, options = {}) {
   if (!graph || typeof graph !== 'object' || start == null) return {};
 
-  const { signal = null, yieldEvery = 2000 } = options;
+  const { signal = null, yieldEvery = 2000, targetNodeIds } = options;
 
-  const distances = {};
+  // Fast-path: no target set provided => preserve original behavior:
+  // return a distance for every node in the graph.
+  if (!Array.isArray(targetNodeIds) || targetNodeIds.length === 0) {
+    const distances = {};
 
-  Object.keys(graph).forEach((node) => {
-    distances[node] = Infinity;
-  });
+    Object.keys(graph).forEach((node) => {
+      distances[node] = Infinity;
+    });
 
-  if (!(start in distances)) return {};
+    if (!(start in distances)) return {};
 
+    distances[start] = 0;
+
+    const heap = new MinHeap();
+    heap.push([0, start]);
+
+    let stepCounter = 0;
+    while (heap.size > 0) {
+      if (signal?.aborted) return {};
+
+      const popped = heap.pop();
+      if (!popped) break;
+      const [d, u] = popped;
+      if (d !== distances[u]) continue; // stale entry
+
+      const neighbours = graph?.[u] ?? [];
+      for (const neighbour of neighbours) {
+        if (signal?.aborted) return {};
+        if (!neighbour || typeof neighbour.node !== 'string' || typeof neighbour.weight !== 'number') continue;
+        const v = neighbour.node;
+        if (!(v in distances)) distances[v] = Infinity;
+
+        const newDist = distances[u] + neighbour.weight;
+        if (newDist < distances[v]) {
+          distances[v] = newDist;
+          heap.push([newDist, v]);
+        }
+      }
+
+      stepCounter++;
+      if (stepCounter % yieldEvery === 0) await yieldToMainThread();
+    }
+
+    return distances;
+  }
+
+  // Targeted mode:
+  // - stop early once all targets are finalized
+  // - return distances only for reachable targets (others omitted)
+  const targetSet = new Set(targetNodeIds);
+  const finalizedTargets = new Set();
+
+  // Only store discovered node distances to reduce memory/payload size.
+  const distances = Object.create(null);
   distances[start] = 0;
 
   const heap = new MinHeap();
@@ -134,17 +184,23 @@ export async function dijkstraDistancesAsync(graph, start, options = {}) {
     const popped = heap.pop();
     if (!popped) break;
     const [d, u] = popped;
-    if (d !== distances[u]) continue; // stale entry
+
+    if (distances[u] == null || d !== distances[u]) continue; // stale entry
+
+    if (targetSet.has(u) && !finalizedTargets.has(u)) {
+      finalizedTargets.add(u);
+      if (finalizedTargets.size >= targetSet.size) break;
+    }
 
     const neighbours = graph?.[u] ?? [];
     for (const neighbour of neighbours) {
       if (signal?.aborted) return {};
       if (!neighbour || typeof neighbour.node !== 'string' || typeof neighbour.weight !== 'number') continue;
       const v = neighbour.node;
-      if (!(v in distances)) distances[v] = Infinity;
+      const prevDist = distances[v] == null ? Infinity : distances[v];
 
-      const newDist = distances[u] + neighbour.weight;
-      if (newDist < distances[v]) {
+      const newDist = d + neighbour.weight;
+      if (newDist < prevDist) {
         distances[v] = newDist;
         heap.push([newDist, v]);
       }
@@ -154,5 +210,10 @@ export async function dijkstraDistancesAsync(graph, start, options = {}) {
     if (stepCounter % yieldEvery === 0) await yieldToMainThread();
   }
 
-  return distances;
+  // Return only reachable targets (omit unreachable to reduce payload).
+  const result = Object.create(null);
+  for (const t of targetNodeIds) {
+    if (distances[t] != null) result[t] = distances[t];
+  }
+  return result;
 }

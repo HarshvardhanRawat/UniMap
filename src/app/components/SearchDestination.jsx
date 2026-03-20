@@ -30,6 +30,9 @@ export default function SearchDestination({
   const debouncedQuery = useDebouncedValue(searchQuery, 120);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const [washroomPage, setWashroomPage] = useState(0);
+  const washroomPageSize = 6;
+
   // Filter locations based on search query (case-insensitive)
   const filteredLocations = useMemo(() =>
     debouncedQuery.trim()
@@ -42,10 +45,26 @@ export default function SearchDestination({
   const isWashroomSelectionMode =
     filteredLocations.length > 0 && filteredLocations.every((loc) => loc.category === 'Washroom');
 
-  const resultsToShow = isWashroomSelectionMode ? filteredLocations : filteredLocations.slice(0, 6);
+  const resultsToShow = useMemo(() => {
+    if (!isWashroomSelectionMode) return filteredLocations.slice(0, 6);
+
+    const baseCount = (washroomPage + 1) * washroomPageSize;
+    const selectedIndex = destination
+      ? filteredLocations.findIndex((loc) => loc.id === destination.id)
+      : -1;
+    const count = selectedIndex >= 0 ? Math.max(baseCount, selectedIndex + 1) : baseCount;
+    return filteredLocations.slice(0, count);
+  }, [isWashroomSelectionMode, filteredLocations, washroomPage, destination]);
+
+  const canLoadMoreWashrooms = isWashroomSelectionMode && resultsToShow.length < filteredLocations.length;
 
   // Build global routing graph once for distance calculations.
   const graph = useMemo(() => buildGlobalGraph(navigationEdges), []);
+
+  // Reset pagination when the user changes the query or mode.
+  useEffect(() => {
+    setWashroomPage(0);
+  }, [debouncedQuery, isWashroomSelectionMode]);
 
   // Find the nearest washroom by shortest-path distance from the current location.
   const { nearestWashroom } = useNearestWashroom({
@@ -155,6 +174,18 @@ export default function SearchDestination({
               </button>
               );
             })}
+
+            {canLoadMoreWashrooms ? (
+              <div className="p-2">
+                <button
+                  type="button"
+                  onClick={() => setWashroomPage((p) => p + 1)}
+                  className="w-full px-4 py-2 text-sm text-blue-700 hover:text-blue-800 hover:bg-blue-50 transition-colors rounded-lg"
+                >
+                  Load more
+                </button>
+              </div>
+            ) : null}
           </motion.div>
         )}
       </AnimatePresence>

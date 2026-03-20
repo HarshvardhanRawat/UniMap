@@ -42,29 +42,35 @@ export default function useNearestWashroom({
     }
 
     const startId = currentLocation.id;
+    const targetNodeIds = filteredLocations.map((loc) => loc.id);
+    const targetSignature = targetNodeIds.join('|');
+    const cacheKey = `${startId}|${targetSignature}`;
+
     const requestId = ++requestIdRef.current;
     const controller = new AbortController();
 
     (async () => {
       try {
-        let distances = distancesCacheRef.current.get(startId);
+        let distances = distancesCacheRef.current.get(cacheKey);
         if (!distances) {
           distances = await dijkstraDistancesAsync(graph, startId, {
             signal: controller.signal,
             yieldEvery: 2000,
+            targetNodeIds,
           });
           if (controller.signal.aborted || requestId !== requestIdRef.current) return;
-          distancesCacheRef.current.set(startId, distances);
+          distancesCacheRef.current.set(cacheKey, distances);
 
           // LRU-ish eviction: remove oldest entry when exceeding max size.
           if (distancesCacheRef.current.size > maxCacheSize) {
             const oldestKey = distancesCacheRef.current.keys().next().value;
             if (oldestKey != null) distancesCacheRef.current.delete(oldestKey);
           }
-        } else {
-          // Refresh recency on cache hit (delete+set preserves insertion order).
-          distancesCacheRef.current.delete(startId);
-          distancesCacheRef.current.set(startId, distances);
+        }
+        // Refresh recency on cache hit (delete+set preserves insertion order).
+        if (distancesCacheRef.current.has(cacheKey)) {
+          distancesCacheRef.current.delete(cacheKey);
+          distancesCacheRef.current.set(cacheKey, distances);
         }
 
         let best = null;

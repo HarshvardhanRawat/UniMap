@@ -167,15 +167,20 @@ export async function computeMultiMapRouteAsync(
   endNodeId,
   options = {},
 ) {
+  const { includeFullPath = true, ...dijkstraOptions } = options;
+
   const nodesMap = buildNodesMap(navigationNodes);
   const graph = buildGlobalGraph(navigationEdges);
 
   if (!nodesMap[startNodeId] || !nodesMap[endNodeId]) return null;
 
-  const path = await dijkstraAsync(graph, startNodeId, endNodeId, options);
+  const path = await dijkstraAsync(graph, startNodeId, endNodeId, dijkstraOptions);
   if (!path || path.length === 0) return null;
 
   const steps = segmentPathByMap(path, nodesMap);
-  return { steps, fullPath: path };
+
+  const result = { steps };
+  if (includeFullPath) result.fullPath = path;
+  return result;
 }
 
