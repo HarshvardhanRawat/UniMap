@@ -24,6 +24,7 @@ export const navigationEdges = [
   { from_node: "AiRoad09", to_node: "JubileeRoad01", distance: 54.52, type: "corridor_to_corridor" },
   { from_node: "JubileeRoad01", to_node: "Jubilee_Gate", distance: 9.41, type: "corridor_to_corridor" },
   { from_node: "AiRoad04", to_node: "AiBuilding_Entry", distance: 6.57, type: "corridor_to_entry" },
+  { from_node: "AiBuilding_Entry", to_node: "ai_entry_gf", distance: 0, type: "entry_to_entry" },
   { from_node: "AiRoad08", to_node: "ENTRY07", distance: 24.47, type: "corridor_to_entry" },
   { from_node: "JubileeRoad01", to_node: "JubileeRoad02", distance: 23.7, type: "corridor_to_corridor" },
   { from_node: "JubileeRoad02", to_node: "JubileeRoad03", distance: 29.57, type: "corridor_to_corridor" },

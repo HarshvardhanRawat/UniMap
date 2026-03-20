@@ -10,11 +10,6 @@ const assetLoaders = {
   AI_GF: () => import('../../assets/AI_GF.svg'),
   AI_FF: () => import('../../assets/AI_FF.svg'),
   AI_SF: () => import('../../assets/AI_SF.svg'),
-  // AI_TF: () => import('../../assets/AI_TF.svg'),
-  // AI_GF: () => import('../../assets/AI_GF.svg'),
-  // AI_FF: () => import('../../assets/AI_FF.svg'),
-  // AI_SF: () => import('../../assets/AI_SF.svg'),
-  // AI_TF: () => import('../../assets/AI_TF.svg'),
 };
 
 const assetCache = new Map();

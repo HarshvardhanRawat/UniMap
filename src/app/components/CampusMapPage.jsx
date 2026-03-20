@@ -37,6 +37,8 @@ export default function CampusMapPage({ userName, onLogout }) {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [autoFitNonce, setAutoFitNonce] = useState(0);
 
+  const unmountedRef = useRef(false);
+
   // Map control state
   const [zoom, setZoom] = useState(1);
   const [panX, setPanX] = useState(0);
@@ -52,6 +54,23 @@ export default function CampusMapPage({ userName, onLogout }) {
   });
   const routeAbortRef = useRef(null);
   const routeRequestIdRef = useRef(0);
+
+  // Cleanup: abort any in-flight route computation and cancel pending rAF updates.
+  useEffect(() => {
+    return () => {
+      unmountedRef.current = true;
+      routeAbortRef.current?.abort();
+      routeAbortRef.current = null;
+      if (gestureRef.current.rafId) {
+        cancelAnimationFrame(gestureRef.current.rafId);
+      }
+      gestureRef.current.rafId = 0;
+      gestureRef.current.pending = null;
+      gestureRef.current.pointers.clear();
+      gestureRef.current.dragStart = null;
+      gestureRef.current.pinchStart = null;
+    };
+  }, []);
 
   useEffect(() => {
     zoomRef.current = zoom;
@@ -303,6 +322,7 @@ export default function CampusMapPage({ userName, onLogout }) {
     gestureRef.current.pending = next;
     if (gestureRef.current.rafId) return;
     gestureRef.current.rafId = requestAnimationFrame(() => {
+      if (unmountedRef.current) return;
       const pending = gestureRef.current.pending;
       gestureRef.current.pending = null;
       gestureRef.current.rafId = 0;

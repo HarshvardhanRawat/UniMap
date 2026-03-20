@@ -25,6 +25,16 @@ export default function useNearestWashroom({
   const requestIdRef = useRef(0);
   const distancesCacheRef = useRef(new Map()); // startNodeId -> distances map
 
+  // Bound cache to avoid unbounded growth of large `distances` objects.
+  const maxCacheSize = 4;
+
+  useEffect(() => {
+    return () => {
+      // Release memory held by cached distance maps when the component unmounts.
+      distancesCacheRef.current.clear();
+    };
+  }, []);
+
   useEffect(() => {
     if (!currentLocation || !isWashroomSelectionMode || filteredLocations.length === 0) {
       setNearestWashroom(null);
@@ -44,6 +54,16 @@ export default function useNearestWashroom({
             yieldEvery: 2000,
           });
           if (controller.signal.aborted || requestId !== requestIdRef.current) return;
+          distancesCacheRef.current.set(startId, distances);
+
+          // LRU-ish eviction: remove oldest entry when exceeding max size.
+          if (distancesCacheRef.current.size > maxCacheSize) {
+            const oldestKey = distancesCacheRef.current.keys().next().value;
+            if (oldestKey != null) distancesCacheRef.current.delete(oldestKey);
+          }
+        } else {
+          // Refresh recency on cache hit (delete+set preserves insertion order).
+          distancesCacheRef.current.delete(startId);
           distancesCacheRef.current.set(startId, distances);
         }
 
