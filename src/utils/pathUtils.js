@@ -215,7 +215,11 @@ function getTurnInstruction(turn, currId, nextId) {
  * @param {number} fromIndex - Starting index to search from
  * @returns {number} - Index of next non-corridor node, or last index if none found
  */
-function nextNonCorridorIndex(points, fromIndex) {
+function nextNonCorridorIndex(points, fromIndex, precomputedNextNonCorridorIdx) {
+  // Optional optimization: provide `precomputedNextNonCorridorIdx` for O(1) lookup.
+  if (Array.isArray(precomputedNextNonCorridorIdx)) {
+    return precomputedNextNonCorridorIdx[fromIndex] ?? (points.length - 1);
+  }
   for (let j = fromIndex + 1; j < points.length; j++) {
     if (!isCorridorNode(points[j])) return j;
   }
@@ -231,7 +235,11 @@ function nextNonCorridorIndex(points, fromIndex) {
  * @param {number} endIdx - Ending index (exclusive)
  * @returns {number} - Total distance in pixels
  */
-function segmentDistance(points, startIdx, endIdx) {
+function segmentDistance(points, startIdx, endIdx, prefixDistances) {
+  // Optional optimization: provide `prefixDistances` for O(1) lookup.
+  if (Array.isArray(prefixDistances)) {
+    return prefixDistances[endIdx] - prefixDistances[startIdx];
+  }
   let d = 0;
   for (let k = startIdx; k < endIdx && k + 1 < points.length; k++) {
     d += distance(points[k], points[k + 1]);
@@ -274,6 +282,23 @@ export function generateTurnByTurnDirections(path, nodesMap) {
     return directions;
   }
 
+  // Precompute corridor info and geometry so per-step work stays O(1).
+  const corridor = points.map((p) => isCorridorNode(p));
+
+  // nextNonCorridorIdx[i] = smallest j>i with !corridor[j], else points.length-1
+  const nextNonCorridorIdx = new Array(points.length);
+  let nearestNonCorridor = null;
+  for (let i = points.length - 1; i >= 0; i--) {
+    nextNonCorridorIdx[i] = nearestNonCorridor == null ? points.length - 1 : nearestNonCorridor;
+    if (!corridor[i]) nearestNonCorridor = i;
+  }
+
+  // prefixDist[i] = distance from points[0] to points[i] along the path (i exclusive)
+  const prefixDist = new Array(points.length).fill(0);
+  for (let i = 1; i < points.length; i++) {
+    prefixDist[i] = prefixDist[i - 1] + distance(points[i - 1], points[i]);
+  }
+
   // Generate directions for each waypoint
   for (let i = 1; i < points.length; i++) {
     const prev = points[i - 1];
@@ -286,9 +311,11 @@ export function generateTurnByTurnDirections(path, nodesMap) {
     const isWaypoint = isFirstStep || !isCorridorNode(curr) || atDestination;
     if (!isWaypoint) continue; // Skip corridor nodes
 
-    const nextWaypointIdx = nextNonCorridorIndex(points, i);
+    const nextWaypointIdx =
+      (i === 1 || !atDestination) ? nextNonCorridorIndex(points, i, nextNonCorridorIdx) : points.length - 1;
     const nextWaypoint = points[nextWaypointIdx];
-    const distToNextWaypoint = segmentDistance(points, i, nextWaypointIdx);
+    const distToNextWaypoint =
+      (i === 1 || !atDestination) ? segmentDistance(points, i, nextWaypointIdx, prefixDist) : 0;
 
     // First step: heading instruction
     if (i === 1) {
@@ -298,7 +325,7 @@ export function generateTurnByTurnDirections(path, nodesMap) {
       directions.push({
         direction: 'straight',
         instruction: `Head towards ${targetName}`,
-        distance: formatDistance(segmentDistance(points, 0, nextWaypointIdx)),
+        distance: formatDistance(segmentDistance(points, 0, nextWaypointIdx, prefixDist)),
         nodeId: curr.id,
       });
       continue;
@@ -309,7 +336,7 @@ export function generateTurnByTurnDirections(path, nodesMap) {
       directions.push({
         direction: 'straight',
         instruction: `Arrive at ${formatNodeName(curr.id)}`,
-        distance: formatDistance(distance(prev, curr)),
+        distance: formatDistance(prefixDist[i] - prefixDist[i - 1]),
         nodeId: curr.id,
       });
       continue;

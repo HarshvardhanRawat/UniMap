@@ -10,7 +10,6 @@ export function dijkstraDistances(graph, start) {
   if (!graph || typeof graph !== 'object' || start == null) return {};
 
   const distances = {};
-  const visited = new Set();
 
   // Initialize all distances to Infinity
   Object.keys(graph).forEach((node) => {
@@ -22,32 +21,69 @@ export function dijkstraDistances(graph, start) {
 
   distances[start] = 0;
 
-  while (true) {
-    let closestNode = null;
-    let closestDistance = Infinity;
-
-    // Find the unvisited node with the smallest distance
-    for (const node in distances) {
-      if (!visited.has(node) && distances[node] < closestDistance) {
-        closestDistance = distances[node];
-        closestNode = node;
+  class MinHeap {
+    constructor() {
+      this.heap = [];
+    }
+    push(item) {
+      this.heap.push(item);
+      this.bubbleUp(this.heap.length - 1);
+    }
+    pop() {
+      if (this.heap.length === 0) return null;
+      const min = this.heap[0];
+      const last = this.heap.pop();
+      if (this.heap.length > 0) {
+        this.heap[0] = last;
+        this.bubbleDown(0);
+      }
+      return min;
+    }
+    get size() {
+      return this.heap.length;
+    }
+    bubbleUp(i) {
+      while (i > 0) {
+        const p = (i - 1) >> 1;
+        if (this.heap[p][0] <= this.heap[i][0]) return;
+        [this.heap[p], this.heap[i]] = [this.heap[i], this.heap[p]];
+        i = p;
       }
     }
+    bubbleDown(i) {
+      const n = this.heap.length;
+      while (true) {
+        const l = i * 2 + 1;
+        const r = l + 1;
+        let smallest = i;
+        if (l < n && this.heap[l][0] < this.heap[smallest][0]) smallest = l;
+        if (r < n && this.heap[r][0] < this.heap[smallest][0]) smallest = r;
+        if (smallest === i) return;
+        [this.heap[i], this.heap[smallest]] = [this.heap[smallest], this.heap[i]];
+        i = smallest;
+      }
+    }
+  }
 
-    // No more nodes to visit
-    if (closestNode === null) break;
+  const heap = new MinHeap();
+  heap.push([0, start]);
 
-    visited.add(closestNode);
+  while (heap.size > 0) {
+    const popped = heap.pop();
+    if (!popped) break;
+    const [d, u] = popped;
+    if (d !== distances[u]) continue; // stale entry
 
-    const neighbours = graph[closestNode] ?? [];
+    const neighbours = graph?.[u] ?? [];
     for (const neighbour of neighbours) {
       if (!neighbour || typeof neighbour.node !== 'string' || typeof neighbour.weight !== 'number') continue;
-      if (!(neighbour.node in distances)) {
-        distances[neighbour.node] = Infinity;
-      }
-      const newDist = distances[closestNode] + neighbour.weight;
-      if (newDist < distances[neighbour.node]) {
-        distances[neighbour.node] = newDist;
+      const v = neighbour.node;
+      if (!(v in distances)) distances[v] = Infinity;
+
+      const newDist = distances[u] + neighbour.weight;
+      if (newDist < distances[v]) {
+        distances[v] = newDist;
+        heap.push([newDist, v]);
       }
     }
   }
