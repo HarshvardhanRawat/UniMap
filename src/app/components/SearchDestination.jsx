@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, Building2, X, Check } from 'lucide-react';
 import { Input } from './ui/input';
@@ -6,7 +6,7 @@ import { Badge } from './ui/badge';
 import { campusLocations } from '../data/LocationConvert';
 import { navigationEdges } from '../data/campusData';
 import { buildGlobalGraph } from '../../utils/multiMapNavigation';
-import { dijkstraDistances } from '../../utils/dijkstraDistances';
+import { dijkstraDistancesAsync } from '../../utils/dijkstraDistances';
 
 /**
  * SearchDestination Component
@@ -28,6 +28,10 @@ export default function SearchDestination({
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const [nearestWashroom, setNearestWashroom] = useState(null);
+  const washroomRequestIdRef = useRef(0);
+  const distancesCacheRef = useRef(new Map()); // startNodeId -> distances map
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQuery(searchQuery), 120);
@@ -51,24 +55,45 @@ export default function SearchDestination({
   // Build global routing graph once for distance calculations.
   const graph = useMemo(() => buildGlobalGraph(navigationEdges), []);
 
-  // Find the nearest washroom by shortest-path distance from the current location.
-  const nearestWashroom = useMemo(() => {
-    if (!currentLocation || !isWashroomSelectionMode || filteredLocations.length === 0) return null;
-
-    const distances = dijkstraDistances(graph, currentLocation.id);
-    if (!distances || typeof distances !== 'object') return null;
-
-    let best = null;
-    let bestDist = Infinity;
-    for (const loc of filteredLocations) {
-      const d = distances[loc.id];
-      if (d != null && d < bestDist) {
-        bestDist = d;
-        best = loc;
-      }
+  // Find the nearest washroom by shortest-path distance from the current location (non-blocking).
+  useEffect(() => {
+    if (!currentLocation || !isWashroomSelectionMode || filteredLocations.length === 0) {
+      setNearestWashroom(null);
+      return;
     }
 
-    return bestDist < Infinity ? best : null;
+    const startId = currentLocation.id;
+    const requestId = ++washroomRequestIdRef.current;
+    const controller = new AbortController();
+
+    (async () => {
+      let distances = distancesCacheRef.current.get(startId);
+      if (!distances) {
+        distances = await dijkstraDistancesAsync(graph, startId, {
+          signal: controller.signal,
+          yieldEvery: 2000,
+        });
+        if (controller.signal.aborted || requestId !== washroomRequestIdRef.current) return;
+        distancesCacheRef.current.set(startId, distances);
+      }
+
+      let best = null;
+      let bestDist = Infinity;
+      for (const loc of filteredLocations) {
+        const d = distances[loc.id];
+        if (d != null && d < bestDist) {
+          bestDist = d;
+          best = loc;
+        }
+      }
+
+      if (controller.signal.aborted || requestId !== washroomRequestIdRef.current) return;
+      setNearestWashroom(bestDist < Infinity ? best : null);
+    })();
+
+    return () => {
+      controller.abort();
+    };
   }, [currentLocation?.id, isWashroomSelectionMode, filteredLocations, graph]);
 
   // Default behavior: auto-select the nearest washroom (but do not override if the user

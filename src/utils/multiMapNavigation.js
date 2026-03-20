@@ -7,7 +7,7 @@
  * per SVG map.
  */
 
-import { dijkstra } from './dijkstra';
+import { dijkstra, dijkstraAsync } from './dijkstra';
 
 /**
  * Builds an adjacency graph from a flat list of edges.
@@ -144,6 +144,36 @@ export function computeMultiMapRoute(
   if (!path || path.length === 0) {
     return null;
   }
+
+  const steps = segmentPathByMap(path, nodesMap);
+  return { steps, fullPath: path };
+}
+
+/**
+ * Non-blocking async multi-map route computation.
+ * Yields during Dijkstra to keep the UI responsive on large graphs.
+ *
+ * @param {Array} navigationNodes
+ * @param {Array} navigationEdges
+ * @param {string} startNodeId
+ * @param {string} endNodeId
+ * @param {{ signal?: AbortSignal, yieldEvery?: number }} [options]
+ * @returns {Promise<{ steps: Array, fullPath: string[] } | null>}
+ */
+export async function computeMultiMapRouteAsync(
+  navigationNodes,
+  navigationEdges,
+  startNodeId,
+  endNodeId,
+  options = {},
+) {
+  const nodesMap = buildNodesMap(navigationNodes);
+  const graph = buildGlobalGraph(navigationEdges);
+
+  if (!nodesMap[startNodeId] || !nodesMap[endNodeId]) return null;
+
+  const path = await dijkstraAsync(graph, startNodeId, endNodeId, options);
+  if (!path || path.length === 0) return null;
 
   const steps = segmentPathByMap(path, nodesMap);
   return { steps, fullPath: path };

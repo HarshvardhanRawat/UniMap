@@ -51,6 +51,15 @@ class MinHeap {
   }
 }
 
+async function yieldToMainThread() {
+  // Allow long CPU loops to be interrupted by the browser UI thread.
+  if (typeof requestAnimationFrame === 'function') {
+    await new Promise((resolve) => requestAnimationFrame(() => resolve()));
+    return;
+  }
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
 export function dijkstraDistances(graph, start) {
   if (!graph || typeof graph !== 'object' || start == null) return {};
 
@@ -87,6 +96,62 @@ export function dijkstraDistances(graph, start) {
         heap.push([newDist, v]);
       }
     }
+  }
+
+  return distances;
+}
+
+/**
+ * Non-blocking async Dijkstra distances (yields during the main loop).
+ *
+ * @param {object} graph
+ * @param {string} start
+ * @param {{ signal?: AbortSignal, yieldEvery?: number }} [options]
+ * @returns {Promise<Record<string, number>>}
+ */
+export async function dijkstraDistancesAsync(graph, start, options = {}) {
+  if (!graph || typeof graph !== 'object' || start == null) return {};
+
+  const { signal = null, yieldEvery = 2000 } = options;
+
+  const distances = {};
+
+  Object.keys(graph).forEach((node) => {
+    distances[node] = Infinity;
+  });
+
+  if (!(start in distances)) return {};
+
+  distances[start] = 0;
+
+  const heap = new MinHeap();
+  heap.push([0, start]);
+
+  let stepCounter = 0;
+  while (heap.size > 0) {
+    if (signal?.aborted) return {};
+
+    const popped = heap.pop();
+    if (!popped) break;
+    const [d, u] = popped;
+    if (d !== distances[u]) continue; // stale entry
+
+    const neighbours = graph?.[u] ?? [];
+    for (const neighbour of neighbours) {
+      if (signal?.aborted) return {};
+      if (!neighbour || typeof neighbour.node !== 'string' || typeof neighbour.weight !== 'number') continue;
+      const v = neighbour.node;
+      if (!(v in distances)) distances[v] = Infinity;
+
+      const newDist = distances[u] + neighbour.weight;
+      if (newDist < distances[v]) {
+        distances[v] = newDist;
+        heap.push([newDist, v]);
+      }
+    }
+
+    stepCounter++;
+    if (stepCounter % yieldEvery === 0) await yieldToMainThread();
   }
 
   return distances;

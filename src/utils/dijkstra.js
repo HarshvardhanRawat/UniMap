@@ -63,6 +63,15 @@ class MinHeap {
   }
 }
 
+async function yieldToMainThread() {
+  // Allow long CPU loops to be interrupted by the browser UI thread.
+  if (typeof requestAnimationFrame === 'function') {
+    await new Promise((resolve) => requestAnimationFrame(() => resolve()));
+    return;
+  }
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
 export function dijkstra(graph, start, end) {
     // Distances and predecessor map for path reconstruction
     const distances = {};
@@ -122,3 +131,75 @@ export function dijkstra(graph, start, end) {
     path.reverse();
     return path;
   }
+
+/**
+ * Non-blocking async Dijkstra (yields during the main loop).
+ *
+ * @param {object} graph
+ * @param {string} start
+ * @param {string} end
+ * @param {{ signal?: AbortSignal, yieldEvery?: number }} [options]
+ * @returns {Promise<string[]|null>}
+ */
+export async function dijkstraAsync(graph, start, end, options = {}) {
+  const { signal = null, yieldEvery = 2000 } = options;
+
+  const distances = {};
+  const prev = {};
+
+  for (const node of Object.keys(graph ?? {})) {
+    distances[node] = Infinity;
+  }
+
+  if (start == null || end == null) return null;
+  if (!(start in distances)) distances[start] = Infinity;
+  if (!(end in distances)) distances[end] = Infinity;
+
+  distances[start] = 0;
+  const heap = new MinHeap();
+  heap.push([0, start]);
+
+  let stepCounter = 0;
+  while (heap.size > 0) {
+    if (signal?.aborted) return null;
+
+    const popped = heap.pop();
+    if (!popped) break;
+    const [d, u] = popped;
+    if (d !== distances[u]) continue; // stale entry
+    if (u === end) break;
+
+    const neighbours = graph?.[u] ?? [];
+    for (const neighbour of neighbours) {
+      if (signal?.aborted) return null;
+      if (!neighbour || typeof neighbour.node !== 'string') continue;
+      const v = neighbour.node;
+      const w = neighbour.weight;
+      if (!(v in distances)) distances[v] = Infinity;
+
+      const newDist = distances[u] + w;
+      if (newDist < distances[v]) {
+        distances[v] = newDist;
+        prev[v] = u;
+        heap.push([newDist, v]);
+      }
+    }
+
+    stepCounter++;
+    if (stepCounter % yieldEvery === 0) await yieldToMainThread();
+  }
+
+  if (distances[end] === Infinity) return null;
+
+  const path = [];
+  let current = end;
+  while (current != null) {
+    path.push(current);
+    if (current === start) break;
+    current = prev[current];
+  }
+
+  if (path[path.length - 1] !== start) return null;
+  path.reverse();
+  return path;
+}

@@ -10,7 +10,7 @@ import QuickAccess from './QuickAccess';
 import MapBox from './ui/MapBox';
 import { campusLocations } from '../data/LocationConvert';
 import { buildings, navigationNodes, navigationEdges } from '../data/campusData';
-import { computeMultiMapRoute, buildNodesMap, buildGlobalGraph } from '../../utils/multiMapNavigation';
+import { computeMultiMapRouteAsync, buildNodesMap, buildGlobalGraph } from '../../utils/multiMapNavigation';
 import { buildPolylinePoints } from '../../utils/pathUtils';
 import { buildUndirectedEdgeIndex, generateDetailedNavigationInstructions } from '../../utils/navigation_instructions';
 
@@ -39,6 +39,7 @@ export default function CampusMapPage({ userName, onLogout }) {
   const [destination, setDestination] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isComputingRoute, setIsComputingRoute] = useState(false);
   const [pathPoints, setPathPoints] = useState('');
   const [navigationDirections, setNavigationDirections] = useState([]);
   const [navigationSteps, setNavigationSteps] = useState([]);
@@ -58,6 +59,8 @@ export default function CampusMapPage({ userName, onLogout }) {
     rafId: 0,
     pending: null,
   });
+  const routeAbortRef = useRef(null);
+  const routeRequestIdRef = useRef(0);
 
   useEffect(() => {
     zoomRef.current = zoom;
@@ -98,8 +101,10 @@ export default function CampusMapPage({ userName, onLogout }) {
    * - reset the map view (zoom and pan) to defaults
    */
   const handleDestinationSelect = useCallback((location) => {
-    if (isNavigating) {
+    if (isNavigating || isComputingRoute) {
+      routeAbortRef.current?.abort();
       setIsNavigating(false);
+      setIsComputingRoute(false);
       setPathPoints('');
       setNavigationDirections([]);
       setZoom(1);
@@ -107,17 +112,17 @@ export default function CampusMapPage({ userName, onLogout }) {
       setPanY(0);
     }
     setDestination(location);
-  }, [isNavigating]);
+  }, [isNavigating, isComputingRoute]);
 
   /**
    * Handles destination clearing
    */
   const handleDestinationClear = useCallback(() => {
     setDestination(null);
-    if (isNavigating) {
+    if (isNavigating || isComputingRoute) {
       handleResetNavigation();
     }
-  }, [isNavigating]);
+  }, [isNavigating, isComputingRoute]);
 
   /**
    * Handles current location selection
@@ -128,8 +133,10 @@ export default function CampusMapPage({ userName, onLogout }) {
    * - reset the map view (zoom and pan) to defaults
    */
   const handleCurrentLocationSelect = useCallback((location) => {
-    if (isNavigating) {
+    if (isNavigating || isComputingRoute) {
+      routeAbortRef.current?.abort();
       setIsNavigating(false);
+      setIsComputingRoute(false);
       setPathPoints('');
       setNavigationDirections([]);
       setZoom(1);
@@ -137,7 +144,7 @@ export default function CampusMapPage({ userName, onLogout }) {
       setPanY(0);
     }
     setCurrentLocation(location);
-  }, [isNavigating]);
+  }, [isNavigating, isComputingRoute]);
 
   /**
    * Handles current location clearing
@@ -145,10 +152,10 @@ export default function CampusMapPage({ userName, onLogout }) {
   const handleCurrentLocationClear = useCallback(() => {
     setCurrentLocation(null);
     setDestination(null);
-    if (isNavigating) {
+    if (isNavigating || isComputingRoute) {
       handleResetNavigation();
     }
-  }, [isNavigating]);
+  }, [isNavigating, isComputingRoute]);
 
   /**
    * Rebuilds polyline + instructions for a single step.
@@ -194,42 +201,60 @@ export default function CampusMapPage({ userName, onLogout }) {
    * Starts navigation by calculating a global shortest path, then
    * segmenting it into per‑map steps.
    */
-  const handleStartNavigation = useCallback(() => {
+  const handleStartNavigation = useCallback(async () => {
     if (!destination || !currentLocation) return;
 
-    const result = computeMultiMapRoute(
-      navigationNodes,
-      navigationEdges,
-      currentLocation.id,
-      destination.id,
-    );
+    setIsComputingRoute(true);
+    const requestId = ++routeRequestIdRef.current;
+    routeAbortRef.current?.abort();
+    const controller = new AbortController();
+    routeAbortRef.current = controller;
 
-    if (!result || !result.steps || result.steps.length === 0) {
-      setPathPoints('');
-      setNavigationDirections([
-        {
-          direction: 'straight',
-          instruction: 'No path found between these locations',
-          distance: '',
-        },
-      ]);
-      setNavigationSteps([]);
+    try {
+      const result = await computeMultiMapRouteAsync(
+        navigationNodes,
+        navigationEdges,
+        currentLocation.id,
+        destination.id,
+        { signal: controller.signal, yieldEvery: 2000 },
+      );
+
+      if (controller.signal.aborted || requestId !== routeRequestIdRef.current) return;
+
+      if (!result || !result.steps || result.steps.length === 0) {
+        setPathPoints('');
+        setNavigationDirections([
+          {
+            direction: 'straight',
+            instruction: 'No path found between these locations',
+            distance: '',
+          },
+        ]);
+        setNavigationSteps([]);
+        setIsNavigating(true);
+        return;
+      }
+
+      setNavigationSteps(result.steps);
+      setActiveStepIndex(0);
       setIsNavigating(true);
-      return;
+      activateStep(result.steps[0]);
+      setAutoFitNonce((n) => n + 1);
+    } finally {
+      if (requestId === routeRequestIdRef.current) {
+        setIsComputingRoute(false);
+      }
     }
-
-    setNavigationSteps(result.steps);
-    setActiveStepIndex(0);
-    setIsNavigating(true);
-    activateStep(result.steps[0]);
-    setAutoFitNonce((n) => n + 1);
   }, [destination, currentLocation, activateStep]);
 
   /**
    * Resets navigation state, clears all selections, and resets map to default zoom/pan
    */
   const handleResetNavigation = useCallback(() => {
+    routeAbortRef.current?.abort();
+    routeAbortRef.current = null;
     setIsNavigating(false);
+    setIsComputingRoute(false);
     setDestination(null);
     setCurrentLocation(null);
     setPathPoints('');
@@ -489,7 +514,7 @@ export default function CampusMapPage({ userName, onLogout }) {
 
                 {/* Start Navigation Button */}
                 <AnimatePresence>
-                  {destination && currentLocation && !isNavigating && (
+                  {destination && currentLocation && !isNavigating && !isComputingRoute && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
