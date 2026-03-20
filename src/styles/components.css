@@ -1,0 +1,107 @@
+@layer components {
+  .surface-card {
+    @apply bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-6 border border-gray-100;
+  }
+
+  .login-page-root {
+    @apply min-h-screen bg-slate-50;
+  }
+
+  .login-page-grid {
+    @apply grid min-h-screen lg:grid-cols-2;
+  }
+
+  .login-left-panel {
+    @apply relative overflow-hidden text-white;
+    background: linear-gradient(135deg, #0b1b45 0%, #12296c 55%, #1c2b78 100%);
+  }
+
+  .login-left-radial {
+    @apply absolute inset-0;
+    background: radial-gradient(circle at top right, rgba(120, 160, 255, 0.25), transparent 45%);
+  }
+
+  .login-left-content {
+    @apply relative mx-auto flex h-full w-full max-w-2xl flex-col justify-center px-8 py-12 sm:px-12;
+  }
+
+  .login-left-logo-wrap {
+    @apply mb-5 mx-auto inline-flex w-fit items-center justify-center rounded-full bg-white/90 p-3 shadow-lg;
+  }
+
+  .login-right-panel {
+    @apply flex items-start justify-center px-4 py-6 sm:px-8 sm:py-10 lg:items-center;
+  }
+
+  .login-main-card {
+    @apply bg-white rounded-3xl shadow-xl shadow-blue-100/50 p-6 sm:p-8 md:p-10 border border-gray-100;
+  }
+
+  .login-google-btn {
+    @apply w-full h-14 rounded-xl !bg-white hover:!bg-gray-50 border-2 border-gray-200 hover:border-gray-300 transition-all duration-300 shadow-lg hover:shadow-xl !text-gray-700;
+  }
+
+  .login-dev-card {
+    @apply mt-4 rounded-xl border border-slate-200 bg-[#F2F3FA] px-4 py-4 shadow-sm;
+  }
+
+  .login-mobile-brand {
+    @apply mb-4 flex items-center justify-center lg:hidden;
+  }
+
+  .login-mobile-hero {
+    @apply min-h-[100svh] flex flex-col justify-center;
+  }
+
+  .login-dev-inner {
+    @apply mt-3 rounded-lg bg-[#E9ECF8] p-3 text-center;
+  }
+
+  .login-social-btn {
+    @apply inline-flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm transition hover:scale-105;
+  }
+
+  .login-professor-frame {
+    @apply flex h-14 w-14 items-center justify-center rounded-full border-2 border-indigo-300 bg-white;
+  }
+
+  .search-input-base {
+    @apply pl-10 pr-10 h-11 rounded-xl border-gray-200;
+  }
+
+  .search-input-destination {
+    @apply focus:border-blue-400 focus:ring-blue-400/20;
+  }
+
+  .search-input-current {
+    @apply focus:border-green-400 focus:ring-green-400/20;
+  }
+
+  .search-clear-btn {
+    @apply absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600;
+  }
+
+  .search-dropdown {
+    @apply absolute z-10 w-full mt-2 bg-white rounded-xl shadow-xl border border-gray-200 max-h-64 overflow-auto overscroll-contain;
+  }
+
+  .search-option-row {
+    @apply w-full px-4 py-3 transition-colors flex items-start gap-3 border-b border-gray-100 last:border-0 text-left;
+  }
+
+  .search-option-content {
+    @apply flex-1 min-w-0 overflow-hidden;
+  }
+
+  .search-option-title {
+    @apply text-sm text-gray-900 truncate;
+  }
+
+  .search-option-meta {
+    @apply text-xs text-gray-500 truncate;
+  }
+
+  .search-option-badge {
+    @apply text-xs flex-shrink-0 ml-2;
+  }
+}

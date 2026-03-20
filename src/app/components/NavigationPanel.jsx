@@ -40,7 +40,7 @@ export default function NavigationPanel({ isNavigating, navigationDirections, on
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 20 }}
-      className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-6 border border-gray-100"
+      className="surface-card"
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">

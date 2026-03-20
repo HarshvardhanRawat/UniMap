@@ -18,7 +18,7 @@ export default function QuickAccess({ isNavigating }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="bg-white rounded-2xl shadow-lg shadow-gray-200/50 p-6 border border-gray-100"
+      className="surface-card"
     >
       <h3 className="text-lg text-gray-900 mb-4">Quick Access</h3>
       <div className="grid grid-cols-2 gap-3">
