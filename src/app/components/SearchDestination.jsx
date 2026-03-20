@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, Building2, X, Check } from 'lucide-react';
 import { Input } from './ui/input';
@@ -6,7 +6,8 @@ import { Badge } from './ui/badge';
 import { campusLocations } from '../data/LocationConvert';
 import { navigationEdges } from '../data/campusData';
 import { buildGlobalGraph } from '../../utils/multiMapNavigation';
-import { dijkstraDistancesAsync } from '../../utils/dijkstraDistances';
+import useDebouncedValue from './hooks/useDebouncedValue';
+import useNearestWashroom from './hooks/useNearestWashroom';
 
 /**
  * SearchDestination Component
@@ -26,17 +27,8 @@ export default function SearchDestination({
   currentLocation,
 }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
+  const debouncedQuery = useDebouncedValue(searchQuery, 120);
   const [showSuggestions, setShowSuggestions] = useState(false);
-
-  const [nearestWashroom, setNearestWashroom] = useState(null);
-  const washroomRequestIdRef = useRef(0);
-  const distancesCacheRef = useRef(new Map()); // startNodeId -> distances map
-
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedQuery(searchQuery), 120);
-    return () => clearTimeout(t);
-  }, [searchQuery]);
 
   // Filter locations based on search query (case-insensitive)
   const filteredLocations = useMemo(() =>
@@ -55,46 +47,13 @@ export default function SearchDestination({
   // Build global routing graph once for distance calculations.
   const graph = useMemo(() => buildGlobalGraph(navigationEdges), []);
 
-  // Find the nearest washroom by shortest-path distance from the current location (non-blocking).
-  useEffect(() => {
-    if (!currentLocation || !isWashroomSelectionMode || filteredLocations.length === 0) {
-      setNearestWashroom(null);
-      return;
-    }
-
-    const startId = currentLocation.id;
-    const requestId = ++washroomRequestIdRef.current;
-    const controller = new AbortController();
-
-    (async () => {
-      let distances = distancesCacheRef.current.get(startId);
-      if (!distances) {
-        distances = await dijkstraDistancesAsync(graph, startId, {
-          signal: controller.signal,
-          yieldEvery: 2000,
-        });
-        if (controller.signal.aborted || requestId !== washroomRequestIdRef.current) return;
-        distancesCacheRef.current.set(startId, distances);
-      }
-
-      let best = null;
-      let bestDist = Infinity;
-      for (const loc of filteredLocations) {
-        const d = distances[loc.id];
-        if (d != null && d < bestDist) {
-          bestDist = d;
-          best = loc;
-        }
-      }
-
-      if (controller.signal.aborted || requestId !== washroomRequestIdRef.current) return;
-      setNearestWashroom(bestDist < Infinity ? best : null);
-    })();
-
-    return () => {
-      controller.abort();
-    };
-  }, [currentLocation?.id, isWashroomSelectionMode, filteredLocations, graph]);
+  // Find the nearest washroom by shortest-path distance from the current location.
+  const { nearestWashroom } = useNearestWashroom({
+    currentLocation,
+    isWashroomSelectionMode,
+    filteredLocations,
+    graph,
+  });
 
   // Default behavior: auto-select the nearest washroom (but do not override if the user
   // already selected one of the current dropdown results).

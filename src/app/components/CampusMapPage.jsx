@@ -11,18 +11,9 @@ import MapBox from './ui/MapBox';
 import { campusLocations } from '../data/LocationConvert';
 import { buildings, navigationNodes, navigationEdges } from '../data/campusData';
 import { computeMultiMapRouteAsync, buildNodesMap, buildGlobalGraph } from '../../utils/multiMapNavigation';
-import { buildPolylinePoints } from '../../utils/pathUtils';
-import { buildUndirectedEdgeIndex, generateDetailedNavigationInstructions } from '../../utils/navigation_instructions';
+import { buildUndirectedEdgeIndex } from '../../utils/navigation_instructions';
 
-/** Maps navigation direction to icon key (left, right, straight) */
-function mapDirectionForIcon(direction) {
-  if (!direction) return 'straight';
-  const leftVariants = ['slight left', 'sharp left', 'u-turn'];
-  const rightVariants = ['slight right', 'sharp right'];
-  if (leftVariants.includes(direction)) return 'left';
-  if (rightVariants.includes(direction)) return 'right';
-  return direction;
-}
+import { buildNavigationStepViewModel } from './services/navigationStepService';
 
 /**
  * CampusMapPage Component
@@ -163,36 +154,13 @@ export default function CampusMapPage({ userName, onLogout }) {
    */
   const activateStep = useCallback(
     (step) => {
-      if (!step || !step.path_nodes || step.path_nodes.length === 0) {
-        setPathPoints('');
-        setNavigationDirections([]);
-        return;
-      }
-
-      const stepPathWithCoords = step.path_nodes.filter((id) => nodesMap[id]);
-      if (stepPathWithCoords.length === 0) {
-        setPathPoints('');
-        setNavigationDirections([]);
-        return;
-      }
-
-      const points = buildPolylinePoints(stepPathWithCoords, nodesMap);
-      setPathPoints(points);
-
-      const rawInstructions = generateDetailedNavigationInstructions(
-        stepPathWithCoords,
+      const { pathPoints, navigationDirections } = buildNavigationStepViewModel(
+        step,
         nodesMap,
         edgeIndex,
       );
-      const directions = rawInstructions
-        .filter((i) => i.action !== 'error')
-        .map((i) => ({
-          direction: mapDirectionForIcon(i.direction),
-          instruction: [i.message, i.landmark].filter(Boolean).join(' '),
-          distance:
-            i.distanceInMeters != null ? `${i.distanceInMeters}m` : '',
-        }));
-      setNavigationDirections(directions);
+      setPathPoints(pathPoints);
+      setNavigationDirections(navigationDirections);
     },
     [nodesMap, edgeIndex],
   );

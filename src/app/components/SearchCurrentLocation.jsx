@@ -1,9 +1,10 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Locate, Building2, X } from 'lucide-react';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { campusLocations } from '../data/LocationConvert';
+import useDebouncedValue from './hooks/useDebouncedValue';
 
 /**
  * SearchCurrentLocation Component
@@ -21,13 +22,8 @@ export default function SearchCurrentLocation({
   onCurrentLocationClear 
 }) {
   const [currentSearchQuery, setCurrentSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showCurrentSuggestions, setShowCurrentSuggestions] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedQuery(currentSearchQuery), 120);
-    return () => clearTimeout(t);
-  }, [currentSearchQuery]);
+  const debouncedQuery = useDebouncedValue(currentSearchQuery, 120);
 
   // Filter locations based on search query (case-insensitive)
   const filteredCurrentLocations = useMemo(() =>
