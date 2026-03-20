@@ -6,7 +6,7 @@ import { Badge } from './ui/badge';
 import { campusLocations } from '../data/LocationConvert';
 import { navigationEdges } from '../data/campusData';
 import { buildGlobalGraph } from '../../utils/multiMapNavigation';
-import { dijkstraDistances } from '../../utils/dijkstra';
+import { dijkstraDistances } from '../../utils/dijkstraDistances';
 
 /**
  * SearchDestination Component
