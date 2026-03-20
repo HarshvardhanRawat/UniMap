@@ -3,6 +3,26 @@
  * Converts a path from Dijkstra into human-readable turn-by-turn directions
  */
 
+const DIRECTION_MAP = {
+  straight: 'Go straight',
+  left: 'Turn left',
+  right: 'Turn right',
+  'slight left': 'Bear left',
+  'slight right': 'Bear right',
+  'sharp left': 'Make a sharp left turn',
+  'sharp right': 'Make a sharp right turn',
+  'u-turn': 'Make a U-turn',
+};
+
+const EDGE_DESCRIPTIONS = {
+  corridor_to_corridor: 'along the corridor',
+  room_to_corridor: 'entering the corridor',
+  entry_to_corridor: 'from the entrance',
+  corridor_to_intersection: 'to the intersection',
+  entry_to_room: 'entering the room',
+  room_to_room: 'between rooms',
+};
+
 /**
  * Calculate the angle between two vectors
  * Returns angle in degrees (-180 to 180)
@@ -143,18 +163,7 @@ function generateNavigationInstructions(path, nodes, edges = null) {
  * Format instruction message
  */
 function formatInstruction(direction, distanceInMeters) {
-  const directionMap = {
-    'straight': 'Go straight',
-    'left': 'Turn left',
-    'right': 'Turn right',
-    'slight left': 'Bear left',
-    'slight right': 'Bear right',
-    'sharp left': 'Make a sharp left turn',
-    'sharp right': 'Make a sharp right turn',
-    'u-turn': 'Make a U-turn'
-  };
-  
-  const action = directionMap[direction] || 'Continue';
+  const action = DIRECTION_MAP[direction] || 'Continue';
   
   if (distanceInMeters < 1) {
     return `${action}`;
@@ -211,16 +220,9 @@ function generateDetailedNavigationInstructions(path, nodes, edgesOrIndex) {
  * Get human-readable edge description
  */
 function getEdgeDescription(edgeType, fromNode, toNode) {
-  const descriptions = {
-    'corridor_to_corridor': 'along the corridor',
-    'room_to_corridor': 'entering the corridor',
-    'entry_to_corridor': 'from the entrance',
-    'corridor_to_intersection': 'to the intersection',
-    'entry_to_room': 'entering the room',
-    'room_to_room': 'between rooms',
-  };
-  
-  return descriptions[edgeType] || '';
+  void fromNode;
+  void toNode;
+  return EDGE_DESCRIPTIONS[edgeType] || '';
 }
 
 /**

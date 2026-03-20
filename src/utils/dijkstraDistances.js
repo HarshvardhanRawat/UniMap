@@ -6,6 +6,51 @@
  * @param {string} start - Starting node ID
  * @returns {Record<string, number>} distances map (Infinity for unreachable nodes)
  */
+
+class MinHeap {
+  constructor() {
+    this.heap = [];
+  }
+  push(item) {
+    this.heap.push(item);
+    this.bubbleUp(this.heap.length - 1);
+  }
+  pop() {
+    if (this.heap.length === 0) return null;
+    const min = this.heap[0];
+    const last = this.heap.pop();
+    if (this.heap.length > 0) {
+      this.heap[0] = last;
+      this.bubbleDown(0);
+    }
+    return min;
+  }
+  get size() {
+    return this.heap.length;
+  }
+  bubbleUp(i) {
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (this.heap[p][0] <= this.heap[i][0]) return;
+      [this.heap[p], this.heap[i]] = [this.heap[i], this.heap[p]];
+      i = p;
+    }
+  }
+  bubbleDown(i) {
+    const n = this.heap.length;
+    while (true) {
+      const l = i * 2 + 1;
+      const r = l + 1;
+      let smallest = i;
+      if (l < n && this.heap[l][0] < this.heap[smallest][0]) smallest = l;
+      if (r < n && this.heap[r][0] < this.heap[smallest][0]) smallest = r;
+      if (smallest === i) return;
+      [this.heap[i], this.heap[smallest]] = [this.heap[smallest], this.heap[i]];
+      i = smallest;
+    }
+  }
+}
+
 export function dijkstraDistances(graph, start) {
   if (!graph || typeof graph !== 'object' || start == null) return {};
 
@@ -20,50 +65,6 @@ export function dijkstraDistances(graph, start) {
   if (!(start in distances)) return {};
 
   distances[start] = 0;
-
-  class MinHeap {
-    constructor() {
-      this.heap = [];
-    }
-    push(item) {
-      this.heap.push(item);
-      this.bubbleUp(this.heap.length - 1);
-    }
-    pop() {
-      if (this.heap.length === 0) return null;
-      const min = this.heap[0];
-      const last = this.heap.pop();
-      if (this.heap.length > 0) {
-        this.heap[0] = last;
-        this.bubbleDown(0);
-      }
-      return min;
-    }
-    get size() {
-      return this.heap.length;
-    }
-    bubbleUp(i) {
-      while (i > 0) {
-        const p = (i - 1) >> 1;
-        if (this.heap[p][0] <= this.heap[i][0]) return;
-        [this.heap[p], this.heap[i]] = [this.heap[i], this.heap[p]];
-        i = p;
-      }
-    }
-    bubbleDown(i) {
-      const n = this.heap.length;
-      while (true) {
-        const l = i * 2 + 1;
-        const r = l + 1;
-        let smallest = i;
-        if (l < n && this.heap[l][0] < this.heap[smallest][0]) smallest = l;
-        if (r < n && this.heap[r][0] < this.heap[smallest][0]) smallest = r;
-        if (smallest === i) return;
-        [this.heap[i], this.heap[smallest]] = [this.heap[smallest], this.heap[i]];
-        i = smallest;
-      }
-    }
-  }
 
   const heap = new MinHeap();
   heap.push([0, start]);

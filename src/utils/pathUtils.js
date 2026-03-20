@@ -311,21 +311,18 @@ export function generateTurnByTurnDirections(path, nodesMap) {
     const isWaypoint = isFirstStep || !isCorridorNode(curr) || atDestination;
     if (!isWaypoint) continue; // Skip corridor nodes
 
-    const nextWaypointIdx =
-      (i === 1 || !atDestination) ? nextNonCorridorIndex(points, i, nextNonCorridorIdx) : points.length - 1;
-    const nextWaypoint = points[nextWaypointIdx];
-    const distToNextWaypoint =
-      (i === 1 || !atDestination) ? segmentDistance(points, i, nextWaypointIdx, prefixDist) : 0;
-
     // First step: heading instruction
     if (i === 1) {
+      const nextWaypointIdx = nextNonCorridorIndex(points, i, nextNonCorridorIdx);
+      const nextWaypoint = points[nextWaypointIdx];
+      const distToNextWaypoint = segmentDistance(points, 0, nextWaypointIdx, prefixDist);
       const targetName = isCorridorNode(nextWaypoint)
         ? 'the corridor'
         : formatNodeName(nextWaypoint.id);
       directions.push({
         direction: 'straight',
         instruction: `Head towards ${targetName}`,
-        distance: formatDistance(segmentDistance(points, 0, nextWaypointIdx, prefixDist)),
+        distance: formatDistance(distToNextWaypoint),
         nodeId: curr.id,
       });
       continue;
@@ -341,6 +338,11 @@ export function generateTurnByTurnDirections(path, nodesMap) {
       });
       continue;
     }
+
+    // Intermediate steps: compute next non-corridor target and distance.
+    const nextWaypointIdx = nextNonCorridorIndex(points, i, nextNonCorridorIdx);
+    const nextWaypoint = points[nextWaypointIdx];
+    const distToNextWaypoint = segmentDistance(points, i, nextWaypointIdx, prefixDist);
 
     // Intermediate steps: turn instructions
     const turn = getTurnDirection(prev, curr, next);
