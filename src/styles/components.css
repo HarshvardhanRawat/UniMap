@@ -30,7 +30,7 @@
   }
 
   .login-right-panel {
-    @apply flex items-start justify-center px-4 py-6 sm:px-8 sm:py-10 lg:items-center;
+    @apply flex items-center justify-center px-4 py-6 sm:px-8 sm:py-10;
   }
 
   .login-main-card {
@@ -50,7 +50,7 @@
   }
 
   .login-mobile-hero {
-    @apply min-h-[100svh] flex flex-col justify-center;
+    @apply min-h-[100svh] flex flex-col justify-center lg:min-h-0 lg:block;
   }
 
   .login-dev-inner {
