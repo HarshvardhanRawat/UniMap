@@ -100,13 +100,3 @@ export const navigationEdges = Object.values(mapDatasets).flatMap(
   (dataset) => dataset.edges,
 );
 
-/**
- * Convenience helper: get dataset (nodes + edges) for a specific map.
- * Returns null if the map is not registered.
- *
- * @param {string} mapId
- * @returns {{id: string, nodes: Array, edges: Array} | null}
- */
-export function getDatasetForMap(mapId) {
-  return mapDatasets[mapId] ?? null;
-}

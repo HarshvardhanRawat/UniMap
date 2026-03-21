@@ -7,7 +7,7 @@
  * per SVG map.
  */
 
-import { dijkstra, dijkstraAsync } from './dijkstra';
+import { dijkstraAsync } from './dijkstra';
 
 const graphCache = new WeakMap();
 const nodesMapCache = new WeakMap();
@@ -133,42 +133,6 @@ export function segmentPathByMap(path, nodesMap) {
   }
 
   return steps;
-}
-
-/**
- * Computes a multi‑map route between two nodes.
- *
- * 1. Builds a global graph from edges
- * 2. Runs Dijkstra across the entire graph
- * 3. Segments the resulting path into per‑map steps
- *
- * @param {Array} navigationNodes
- * @param {Array} navigationEdges
- * @param {string} startNodeId
- * @param {string} endNodeId
- * @returns {{ steps: Array, fullPath: string[] } | null}
- */
-export function computeMultiMapRoute(
-  navigationNodes,
-  navigationEdges,
-  startNodeId,
-  endNodeId,
-  options = {},
-) {
-  const nodesMap = options.nodesMap ?? buildNodesMap(navigationNodes);
-  const graph = options.graph ?? buildGlobalGraph(navigationEdges);
-
-  if (!nodesMap[startNodeId] || !nodesMap[endNodeId]) {
-    return null;
-  }
-
-  const path = dijkstra(graph, startNodeId, endNodeId);
-  if (!path || path.length === 0) {
-    return null;
-  }
-
-  const steps = segmentPathByMap(path, nodesMap);
-  return { steps, fullPath: path };
 }
 
 /**

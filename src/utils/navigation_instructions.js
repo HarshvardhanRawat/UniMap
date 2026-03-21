@@ -89,7 +89,7 @@ function calculateDistance(node1, node2) {
  * @param {Array} edges - Optional: edges dataset for getting edge types
  * @returns {Array<Object>} Navigation instructions
  */
-function generateNavigationInstructions(path, nodes, edges = null) {
+function generateNavigationInstructions(path, nodes) {
   if (!path || path.length < 2) {
     return [{ action: 'error', message: 'Invalid path' }];
   }
@@ -196,7 +196,7 @@ function generateDetailedNavigationInstructions(path, nodes, edgesOrIndex) {
     edgesOrIndex instanceof Map ? edgesOrIndex : buildUndirectedEdgeIndex(edgesOrIndex);
   
   // Add edge type information
-  return basicInstructions.map((instruction, index) => {
+  return basicInstructions.map((instruction) => {
     if (instruction.action === 'continue' || instruction.action === 'turn') {
       // Find the edge for this segment
       const fromNode = instruction.from;
@@ -225,37 +225,7 @@ function getEdgeDescription(edgeType, fromNode, toNode) {
   return EDGE_DESCRIPTIONS[edgeType] || '';
 }
 
-/**
- * Format all instructions as a readable string
- */
-function formatInstructionsAsText(instructions) {
-  let text = '';
-  let stepNumber = 1;
-  
-  instructions.forEach((instruction, index) => {
-    if (instruction.action === 'start') {
-      text += `📍 ${instruction.message}\n\n`;
-    } else if (instruction.action === 'continue' || instruction.action === 'turn') {
-      text += `${stepNumber}. ${instruction.message}`;
-      if (instruction.landmark) {
-        text += ` ${instruction.landmark}`;
-      }
-      text += '\n';
-      stepNumber++;
-    } else if (instruction.action === 'arrive') {
-      text += `\n🎯 ${instruction.message}\n`;
-    }
-  });
-  
-  return text;
-}
-
 export {
-  generateNavigationInstructions,
   buildUndirectedEdgeIndex,
   generateDetailedNavigationInstructions,
-  formatInstructionsAsText,
-  calculateAngle,
-  getTurnDirection,
-  calculateDistance,
 };

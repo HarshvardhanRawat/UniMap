@@ -1,30 +1,9 @@
-import { useState, useEffect } from "react";
 import '../../styles/dev.css';
 import developerProfile from '../../assets/profile.webp';
 import unimapLogo from '../../assets/logo.webp';
-import mentorManish from '../../assets/DrMD.webp';
-import mentorSaurabh from '../../assets/DrSA.webp';
-
-
-const features = [
-  { icon: "🔍", title: "Smart Search", desc: "Find any room, lab, or location instantly." },
-  { icon: "🗺️", title: "Interactive Map", desc: "Clickable nodes for seamless exploration." },
-  { icon: "⚡", title: "Real-Time Pathfinding", desc: "Shortest, most efficient routes on demand." },
-  { icon: "🏢", title: "Multi-Floor Navigation", desc: "Navigate across floors and buildings." },
-];
-
-const mentors = [
-  { initials: "MD", name: "Dr. Manish Dixit", role: "Professor & Head, CS", photo: mentorManish },
-  { initials: "SA", name: "Dr. Saurabh Agarwal", role: "Assistant Professor", photo: mentorSaurabh },
-];
+import { features, mentors } from './devPageData';
 
 export default function DevPage({ onBackToMap }) {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const timerId = setTimeout(() => setVisible(true), 50);
-    return () => clearTimeout(timerId);
-  }, []);
-
   return (
     <div className="dev-page">
       <div className="dev-topbar">
