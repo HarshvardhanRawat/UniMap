@@ -204,7 +204,13 @@ export default function CampusMapPage({ userName, onLogout, onOpenDeveloperPage 
         navigationEdges,
         currentLocation.id,
         destination.id,
-      { signal: controller.signal, yieldEvery: 2000, includeFullPath: false },
+        {
+          signal: controller.signal,
+          yieldEvery: 2000,
+          includeFullPath: false,
+          nodesMap,
+          graph,
+        },
       );
 
       if (controller.signal.aborted || requestId !== routeRequestIdRef.current) return;

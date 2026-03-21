@@ -9,6 +9,9 @@
 
 import { dijkstra, dijkstraAsync } from './dijkstra';
 
+const graphCache = new WeakMap();
+const nodesMapCache = new WeakMap();
+
 /**
  * Builds an adjacency graph from a flat list of edges.
  * The graph is map‑agnostic; segmentation happens later.
@@ -17,6 +20,11 @@ import { dijkstra, dijkstraAsync } from './dijkstra';
  * @returns {Record<string, Array<{node: string, weight: number}>>}
  */
 export function buildGlobalGraph(navigationEdges) {
+  if (Array.isArray(navigationEdges)) {
+    const cached = graphCache.get(navigationEdges);
+    if (cached) return cached;
+  }
+
   const graph = {};
 
   navigationEdges.forEach((edge) => {
@@ -33,6 +41,10 @@ export function buildGlobalGraph(navigationEdges) {
     graph[to].push({ node: from, weight: w });
   });
 
+  if (Array.isArray(navigationEdges)) {
+    graphCache.set(navigationEdges, graph);
+  }
+
   return graph;
 }
 
@@ -43,7 +55,16 @@ export function buildGlobalGraph(navigationEdges) {
  * @returns {Record<string, any>}
  */
 export function buildNodesMap(navigationNodes) {
-  return Object.fromEntries(navigationNodes.map((n) => [n.id, n]));
+  if (Array.isArray(navigationNodes)) {
+    const cached = nodesMapCache.get(navigationNodes);
+    if (cached) return cached;
+  }
+
+  const nextMap = Object.fromEntries(navigationNodes.map((n) => [n.id, n]));
+  if (Array.isArray(navigationNodes)) {
+    nodesMapCache.set(navigationNodes, nextMap);
+  }
+  return nextMap;
 }
 
 /**
@@ -132,9 +153,10 @@ export function computeMultiMapRoute(
   navigationEdges,
   startNodeId,
   endNodeId,
+  options = {},
 ) {
-  const nodesMap = buildNodesMap(navigationNodes);
-  const graph = buildGlobalGraph(navigationEdges);
+  const nodesMap = options.nodesMap ?? buildNodesMap(navigationNodes);
+  const graph = options.graph ?? buildGlobalGraph(navigationEdges);
 
   if (!nodesMap[startNodeId] || !nodesMap[endNodeId]) {
     return null;
@@ -167,10 +189,15 @@ export async function computeMultiMapRouteAsync(
   endNodeId,
   options = {},
 ) {
-  const { includeFullPath = true, ...dijkstraOptions } = options;
+  const {
+    includeFullPath = true,
+    nodesMap: precomputedNodesMap,
+    graph: precomputedGraph,
+    ...dijkstraOptions
+  } = options;
 
-  const nodesMap = buildNodesMap(navigationNodes);
-  const graph = buildGlobalGraph(navigationEdges);
+  const nodesMap = precomputedNodesMap ?? buildNodesMap(navigationNodes);
+  const graph = precomputedGraph ?? buildGlobalGraph(navigationEdges);
 
   if (!nodesMap[startNodeId] || !nodesMap[endNodeId]) return null;
 

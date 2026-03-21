@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import LoginPage from './components/LoginPage';
-import CampusMapPage from './components/CampusMapPage';
-import DevPage from './components/DevPage';
+import { lazy, Suspense, useState } from 'react';
+
+const LoginPage = lazy(() => import('./components/LoginPage'));
+const CampusMapPage = lazy(() => import('./components/CampusMapPage'));
+const DevPage = lazy(() => import('./components/DevPage'));
 
 /**
  * App Component
@@ -40,17 +41,19 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      {!isLoggedIn ? (
-        <LoginPage onLogin={handleLogin} />
-      ) : activePage === 'dev' ? (
-        <DevPage onBackToMap={() => setActivePage('map')} />
-      ) : (
-        <CampusMapPage
-          userName={userName}
-          onLogout={handleLogout}
-          onOpenDeveloperPage={() => setActivePage('dev')}
-        />
-      )}
+      <Suspense fallback={<div className="min-h-screen" />}>
+        {!isLoggedIn ? (
+          <LoginPage onLogin={handleLogin} />
+        ) : activePage === 'dev' ? (
+          <DevPage onBackToMap={() => setActivePage('map')} />
+        ) : (
+          <CampusMapPage
+            userName={userName}
+            onLogout={handleLogout}
+            onOpenDeveloperPage={() => setActivePage('dev')}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

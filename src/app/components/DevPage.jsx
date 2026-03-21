@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import '../../styles/dev.css';
-import developerProfile from '../../assets/profile.png';
+import developerProfile from '../../assets/profile.webp';
 import unimapLogo from '../../assets/logo.webp';
 import mentorManish from '../../assets/DrMD.webp';
-import mentorSaurabh from '../../assets/DrSA.jpeg';
+import mentorSaurabh from '../../assets/DrSA.webp';
 
 
 const features = [
@@ -20,7 +20,10 @@ const mentors = [
 
 export default function DevPage({ onBackToMap }) {
   const [visible, setVisible] = useState(false);
-  useEffect(() => { setTimeout(() => setVisible(true), 50); }, []);
+  useEffect(() => {
+    const timerId = setTimeout(() => setVisible(true), 50);
+    return () => clearTimeout(timerId);
+  }, []);
 
   return (
     <div className="dev-page">

@@ -24,14 +24,15 @@ export default function SearchCurrentLocation({
   const [currentSearchQuery, setCurrentSearchQuery] = useState('');
   const [showCurrentSuggestions, setShowCurrentSuggestions] = useState(false);
   const debouncedQuery = useDebouncedValue(currentSearchQuery, 120);
+  const normalizedQuery = useMemo(() => debouncedQuery.trim().toLowerCase(), [debouncedQuery]);
 
   // Filter locations based on search query (case-insensitive)
   const filteredCurrentLocations = useMemo(() =>
-    debouncedQuery.trim()
+    normalizedQuery
       ? campusLocations.filter((loc) =>
-          (loc.searchName ?? loc.name.toLowerCase()).includes(debouncedQuery.toLowerCase())
+          (loc.searchName ?? loc.name.toLowerCase()).includes(normalizedQuery)
         )
-      : [], [debouncedQuery]
+      : [], [normalizedQuery]
   );
 
   /**

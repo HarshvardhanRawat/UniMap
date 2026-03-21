@@ -1,10 +1,10 @@
 import { motion } from 'motion/react';
 import { Button } from './ui/button';
 import logoWebp from '../../assets/logo.webp';
-import mitslogo from '../../assets/clg_logo.png';
+import mitslogo from '../../assets/clg_logo.webp';
 import mentorMd from '../../assets/DrMD.webp';
-import mentorSa from '../../assets/DrSA.jpeg';
-import developerProfile from '../../assets/profile.png';
+import mentorSa from '../../assets/DrSA.webp';
+import developerProfile from '../../assets/profile.webp';
 
 /**
  * LoginPage Component

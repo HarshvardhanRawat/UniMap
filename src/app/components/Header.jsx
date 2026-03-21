@@ -9,9 +9,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
-import logoPng from '../../assets/logo.png';
 import logoWebp from '../../assets/logo.webp';
-import clgLogo from '../../assets/clg_logo.png';
+import clgLogo from '../../assets/clg_logo.webp';
 
 /**
  * Header Component
@@ -38,7 +37,7 @@ export default function Header({ userName, onLogout, onOpenDeveloperPage }) {
             <span className="text-gray-400 text-xl font-light">×</span>
             <picture>
               <source srcSet={logoWebp} type="image/webp" />
-              <img src={logoPng} alt="UniMap Logo" className="h-12 w-auto" decoding="async" />
+              <img src={logoWebp} alt="UniMap Logo" className="h-12 w-auto" decoding="async" />
             </picture>
           </div>
 

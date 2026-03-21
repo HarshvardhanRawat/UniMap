@@ -28,6 +28,7 @@ export default function SearchDestination({
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedQuery = useDebouncedValue(searchQuery, 120);
+  const normalizedQuery = useMemo(() => debouncedQuery.trim().toLowerCase(), [debouncedQuery]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [washroomPage, setWashroomPage] = useState(0);
@@ -35,11 +36,11 @@ export default function SearchDestination({
 
   // Filter locations based on search query (case-insensitive)
   const filteredLocations = useMemo(() =>
-    debouncedQuery.trim()
+    normalizedQuery
       ? campusLocations.filter((loc) =>
-          (loc.searchName ?? loc.name.toLowerCase()).includes(debouncedQuery.toLowerCase())
+          (loc.searchName ?? loc.name.toLowerCase()).includes(normalizedQuery)
         )
-      : [], [debouncedQuery]
+      : [], [normalizedQuery]
   );
 
   const isWashroomSelectionMode =
