@@ -11,6 +11,7 @@ import {
 } from './ui/dropdown-menu';
 import logoPng from '../../assets/logo.png';
 import logoWebp from '../../assets/logo.webp';
+import clgLogo from '../../assets/clg_logo.png';
 
 /**
  * Header Component
@@ -29,13 +30,15 @@ export default function Header({ userName, onLogout, onOpenDeveloperPage }) {
       animate={{ y: 0, opacity: 1 }}
       className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex items-center justify-between">
           {/* Logo Section */}
           <div className="flex items-center gap-3">
+            <img src={clgLogo} alt="College Logo" className="h-12 w-auto" decoding="async" />
+            <span className="text-gray-400 text-xl font-light">×</span>
             <picture>
               <source srcSet={logoWebp} type="image/webp" />
-              <img src={logoPng} alt="UniMap Logo" className="h-10 w-auto" decoding="async" />
+              <img src={logoPng} alt="UniMap Logo" className="h-12 w-auto" decoding="async" />
             </picture>
           </div>
 

@@ -22,9 +22,9 @@ const mapsById = Object.fromEntries(maps.map((m) => [m.id, m]));
 const buildingsById = Object.fromEntries(buildings.map((b) => [b.id, b]));
 
 export const campusLocations = navigationNodes
-  // Exclude all corridor-type nodes (including intersections) from search;
-  // they are used only as internal waypoints for pathfinding/drawing.
-  .filter((n) => n.type !== 'corridor')
+  // Exclude internal pathing nodes from search (corridor/intersection)
+  // they are used only as waypoints for pathfinding/drawing.
+  .filter((n) => n.type !== 'corridor' && n.type !== 'intersection')
   .map((n) => {
     // Parse room name and category from node ID
     const parsed = parseRoomName(n.id);

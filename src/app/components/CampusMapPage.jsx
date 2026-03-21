@@ -535,7 +535,7 @@ export default function CampusMapPage({ userName, onLogout, onOpenDeveloperPage 
             />
 
             {/* Quick Access Panel */}
-            <QuickAccess isNavigating={isNavigating} />
+            <QuickAccess isNavigating={isNavigating} onDestinationSelect={handleDestinationSelect} />
           </motion.div>
 
           {/* Right Side - Maps */}
