@@ -20,8 +20,9 @@ import logoWebp from '../../assets/logo.webp';
  * 
  * @param {string} userName - The current logged-in user's name
  * @param {function} onLogout - Callback function to handle user logout
+ * @param {function} onOpenDeveloperPage - Callback function to open developer page
  */
-export default function Header({ userName, onLogout }) {
+export default function Header({ userName, onLogout, onOpenDeveloperPage }) {
   return (
     <motion.header
       initial={{ y: -20, opacity: 0 }}
@@ -54,9 +55,9 @@ export default function Header({ userName, onLogout }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 rounded-xl">
-              <DropdownMenuItem className="rounded-lg">
+              <DropdownMenuItem className="rounded-lg" onClick={onOpenDeveloperPage}>
                 <User className="w-4 h-4 mr-2" />
-                Profile
+                Developer & Feedback
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onLogout} className="rounded-lg text-red-600">

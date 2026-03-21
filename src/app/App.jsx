@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import LoginPage from './components/LoginPage';
 import CampusMapPage from './components/CampusMapPage';
+import DevPage from './components/DevPage';
 
 /**
  * App Component
@@ -13,6 +14,7 @@ export default function App() {
   // Authentication state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
+  const [activePage, setActivePage] = useState('map');
 
   /**
    * Handles user login.
@@ -23,6 +25,7 @@ export default function App() {
   const handleLogin = (name) => {
     setUserName(name);
     setIsLoggedIn(true);
+    setActivePage('map');
   };
 
   /**
@@ -32,14 +35,21 @@ export default function App() {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserName('');
+    setActivePage('map');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {!isLoggedIn ? (
         <LoginPage onLogin={handleLogin} />
+      ) : activePage === 'dev' ? (
+        <DevPage onBackToMap={() => setActivePage('map')} />
       ) : (
-        <CampusMapPage userName={userName} onLogout={handleLogout} />
+        <CampusMapPage
+          userName={userName}
+          onLogout={handleLogout}
+          onOpenDeveloperPage={() => setActivePage('dev')}
+        />
       )}
     </div>
   );

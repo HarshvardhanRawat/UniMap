@@ -24,8 +24,9 @@ import { buildNavigationStepViewModel } from './services/navigationStepService';
  * 
  * @param {string} userName - The current logged-in user's name
  * @param {function} onLogout - Callback function to handle user logout
+ * @param {function} onOpenDeveloperPage - Callback function to open developer page
  */
-export default function CampusMapPage({ userName, onLogout }) {
+export default function CampusMapPage({ userName, onLogout, onOpenDeveloperPage }) {
   // Navigation state
   const [destination, setDestination] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -440,7 +441,11 @@ export default function CampusMapPage({ userName, onLogout }) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <Header userName={userName} onLogout={onLogout} />
+      <Header
+        userName={userName}
+        onLogout={onLogout}
+        onOpenDeveloperPage={onOpenDeveloperPage}
+      />
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-8">
