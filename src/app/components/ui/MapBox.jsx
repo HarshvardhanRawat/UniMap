@@ -216,7 +216,7 @@ export default function MapBox({
             ) : null}
             
             {/* Zoom Controls */}
-            {(showFloorPlan && activeFloor) || destination || currentLocation ? (
+            {isNavigating && ((showFloorPlan && activeFloor) || destination || currentLocation) ? (
               <div className="flex flex-wrap items-center gap-1 sm:ml-2">
                 <Button
                   onClick={handleZoomOut}
@@ -267,12 +267,12 @@ export default function MapBox({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing touch-none"
-              onWheel={handleWheel}
-              onPointerDown={handlePointerDown}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerCancel}
+              className={isNavigating ? 'absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing touch-none' : 'absolute inset-0 w-full h-full cursor-default'}
+              onWheel={isNavigating ? handleWheel : undefined}
+              onPointerDown={isNavigating ? handlePointerDown : undefined}
+              onPointerMove={isNavigating ? handlePointerMove : undefined}
+              onPointerUp={isNavigating ? handlePointerUp : undefined}
+              onPointerCancel={isNavigating ? handlePointerCancel : undefined}
               style={{
                 transform: `scale(${zoom}) translate(${panX / zoom}px, ${panY / zoom}px)`,
                 transformOrigin: 'center center',
