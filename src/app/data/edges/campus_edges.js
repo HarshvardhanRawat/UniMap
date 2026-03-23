@@ -7,6 +7,7 @@ export const navigationEdges = [
   { from_node: "MainRoad05", to_node: "MainRoad06", distance: 37.37, type: "corridor_to_corridor" },
   { from_node: "MainRoad06", to_node: "MainRoad07", distance: 43.3, type: "corridor_to_corridor" },
   { from_node: "MainRoad07", to_node: "MainRoad08", distance: 22.9, type: "corridor_to_corridor" },
+  { from_node: "MainRoad08", to_node: "ENTRY03", distance: 27.51, type: "corridor_to_entry" },
   { from_node: "MainRoad08", to_node: "MainRoad09", distance: 27.64, type: "corridor_to_corridor" },
   { from_node: "MainRoad09", to_node: "MainRoad10", distance: 51.75, type: "corridor_to_corridor" },
   { from_node: "MainRoad10", to_node: "MainRoad11", distance: 41.61, type: "corridor_to_corridor" },

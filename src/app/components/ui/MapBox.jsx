@@ -5,6 +5,8 @@ import { Button } from './button';
 import { Badge } from './badge';
 import { buildings } from '../../data/campusData';
 import { getMapAsset, preloadMapAsset, mapViewBoxes } from '../../data/mapAssets';
+import MainCover from '../../../assets/Main_Cover.webp';
+import AICover from '../../../assets/AI_Cover.webp';
 
 function parsePoints(pointsString) {
   if (!pointsString || typeof pointsString !== 'string') return [];
@@ -458,23 +460,41 @@ export default function MapBox({
             // Building Overview Grid (when no location selected)
             <div className="absolute inset-0 p-4 sm:p-6 lg:p-8">
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 h-full">
-                {buildings.map((building, idx) => (
-                  <motion.div
-                    key={building.id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 * idx }}
-                    className="relative rounded-lg border-2 bg-white border-gray-300 hover:border-gray-400 transition-all"
-                  >
-                    <div className="absolute top-2 left-2">
-                      <Building2 className="w-5 h-5 text-gray-400" />
-                    </div>
-                    <div className="absolute bottom-2 left-2 right-2">
-                      <p className="text-xs text-gray-700 truncate">{building.name}</p>
-                      <p className="text-xs text-gray-500">{building.floors} floors</p>
-                    </div>
-                  </motion.div>
-                ))}
+                {buildings.map((building, idx) => {
+                  const buildingImage = building.id === 'main' ? MainCover : building.id === 'ai' ? AICover : '';
+
+                  return (
+                    <motion.div
+                      key={building.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.1 * idx }}
+                      className="relative rounded-lg border-2 border-gray-300 hover:border-gray-400 transition-all overflow-hidden"
+                    >
+                      {buildingImage ? (
+                        <img
+                          src={buildingImage}
+                          alt={`${building.name} photo`}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gray-100" />
+                      )}
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/30 to-transparent" />
+
+                      <div className="absolute top-2 left-2">
+                        <Building2 className="w-5 h-5 text-white" />
+                      </div>
+
+                      <div className="absolute bottom-2 left-2 right-2 text-white">
+                        <p className="text-xs truncate">{building.name}</p>
+                        <p className="text-xs opacity-90">{building.floors} floors</p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           )}

@@ -8,8 +8,7 @@ import SearchCurrentLocation from './SearchCurrentLocation';
 import NavigationPanel from './NavigationPanel';
 import QuickAccess from './QuickAccess';
 import MapBox from './ui/MapBox';
-import { campusLocations } from '../data/LocationConvert';
-import { buildings, navigationNodes, navigationEdges } from '../data/campusData';
+import {navigationNodes, navigationEdges } from '../data/campusData';
 import { computeMultiMapRouteAsync, buildNodesMap, buildGlobalGraph } from '../../utils/multiMapNavigation';
 import { buildUndirectedEdgeIndex } from '../../utils/navigation_instructions';
 
