@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState, useEffect } from 'react';
+import { Analytics } from "@vercel/analytics/react"
 
 const LoginPage = lazy(() => import('./components/LoginPage'));
 const CampusMapPage = lazy(() => import('./components/CampusMapPage'));
@@ -72,6 +73,7 @@ export default function App() {
           />
         )}
       </Suspense>
+      <Analytics />
     </div>
   );
 }

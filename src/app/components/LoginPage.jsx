@@ -13,8 +13,7 @@ import developerProfile from '../../assets/profile.webp';
  * Provides a simple login flow that sets a default user name.
  * 
  * @param {function} onLogin - Callback function called when user logs in
- *                            Receives the user's name as parameter
- * @param {number} searchCount - Total number of location searches made by users
+ *                            Receives the user's name as parameter* @param {number} searchCount - Total number of location searches made by users
  */
 export default function LoginPage({ onLogin, searchCount = 0 }) {
   /**
@@ -63,7 +62,7 @@ export default function LoginPage({ onLogin, searchCount = 0 }) {
                 </div>
               ))}
             </div>
-
+            
             <div className="mt-8 rounded-xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm text-center">
               <p className="text-3xl font-bold text-white">{searchCount.toLocaleString()}</p>
               <p className="text-sm text-blue-100 mt-1">Total Destinations Searched</p>
@@ -104,14 +103,7 @@ export default function LoginPage({ onLogin, searchCount = 0 }) {
                       <img src={logoWebp} alt="UniMap Logo" className="w-44 h-auto" decoding="async" />
                     </picture>
                   </motion.div>
-                  <motion.h2
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                    className="text-2l font-bold text-slate-900"
-                  >
-                    Welcome to UniMap
-                  </motion.h2>
+
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
