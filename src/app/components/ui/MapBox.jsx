@@ -373,7 +373,7 @@ export default function MapBox({
                 </Button>
               </div>
             ) : null}
-            
+
             {/* Zoom Controls */}
             {isNavigating && ((showFloorPlan && activeFloor) || destination || currentLocation) ? (
               <div className="flex flex-wrap items-center gap-1 sm:ml-2">
@@ -501,9 +501,9 @@ export default function MapBox({
                     <motion.g
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      style={{ 
-                        transform: `scale(${1/zoom})`, 
-                        transformOrigin: `${destination.x}px ${destination.y - 10}px` 
+                      style={{
+                        transform: `scale(${1 / zoom})`,
+                        transformOrigin: `${destination.x}px ${destination.y - 10}px`
                       }}
                     >
                       {/* Outer Pulsing Circle */}
@@ -559,9 +559,9 @@ export default function MapBox({
                     <motion.g
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      style={{ 
-                        transform: `scale(${1/zoom})`, 
-                        transformOrigin: `${currentLocation.x}px ${currentLocation.y - 10}px` 
+                      style={{
+                        transform: `scale(${1 / zoom})`,
+                        transformOrigin: `${currentLocation.x}px ${currentLocation.y - 10}px`
                       }}
                     >
                       {/* Outer Pulsing Circle */}

@@ -66,9 +66,29 @@ export const navigationEdges = [
   { from_node: "Canteen06", to_node: "Canteen07", distance: 32.31, type: "corridor_to_corridor" },
   { from_node: "Canteen07", to_node: "Canteen08", distance: 22.29, type: "corridor_to_corridor" },
   { from_node: "Canteen08", to_node: "Library_Campus", distance: 13.15, type: "corridor_to_corridor" },
+
+  // ─── LIBRARY PATH EDGES ───────────────────────────────────────────────────────
+
+  // Library destination spur
+  { from_node: "Library_Campus", to_node: "Library01", distance: 7.63, type: "corridor_to_room" },
+
+  // Library path vertical spine (north, y decreasing)
+  { from_node: "Library01", to_node: "Library02", distance: 24.03, type: "corridor_to_corridor" },
+  { from_node: "Library02", to_node: "Library03", distance: 31.50, type: "corridor_to_corridor" },
+  { from_node: "Library03", to_node: "Library04", distance: 37.34, type: "corridor_to_corridor" },
+
+  // Library04 connects to ENTRY04 (Main Building east entry) and JubileeRoad07
+  { from_node: "Library04", to_node: "ENTRY04", distance: 6.26, type: "corridor_to_entry" },
+  { from_node: "Library04", to_node: "Library05", distance: 39.76, type: "corridor_to_corridor" },
+  { from_node: "Library05", to_node: "JubileeRoad07", distance: 26.99, type: "corridor_to_corridor" },
+
+  // Canteen path connects into Library01 from the west (polyline 7798)
+  { from_node: "Canteen08", to_node: "Library01", distance: 10.85, type: "corridor_to_corridor" },
+
   { from_node: "JubileeRoad07", to_node: "ENTRY04", distance: 72.5, type: "corridor_to_entry" },
   { from_node: "AiRoad09", to_node: "ENTRY05", distance: 129.55, type: "corridor_to_entry" },
   { from_node: "AiRoad07", to_node: "ENTRY06", distance: 129.46, type: "corridor_to_entry" },
   { from_node: "AiRoad04", to_node: "Workshops", distance: 14.68, type: "corridor_to_room" },
   { from_node: "MainRoad04", to_node: "intersectionCorridor01_04", distance: 63.87, type: "corridor_to_corridor" },
+
 ]
