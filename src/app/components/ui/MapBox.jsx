@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import { ZoomIn, ZoomOut, RotateCcw, Building2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './button';
@@ -67,24 +67,180 @@ export default function MapBox({
   isNavigating,
   pathPoints,
   autoFitNonce,
-  onRequestView,
   stepCount = 0,
   activeStepIndex = 0,
   onPrevStep,
   onNextStep,
-  zoom,
-  panX,
-  panY,
-  handleZoomIn,
-  handleZoomOut,
-  handleResetZoom,
-  handleWheel,
-  handlePointerDown,
-  handlePointerMove,
-  handlePointerUp,
-  handlePointerCancel,
 }) {
   const prefersReducedMotion = useReducedMotion();
+
+  // Map control state
+  const [zoom, setZoom] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
+  const zoomRef = useRef(zoom);
+  const panRef = useRef({ x: panX, y: panY });
+  const gestureRef = useRef({
+    pointers: new Map(),
+    dragStart: null,
+    pinchStart: null,
+    rafId: 0,
+    pending: null,
+  });
+  const unmountedRef = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      unmountedRef.current = true;
+      if (gestureRef.current.rafId) {
+        cancelAnimationFrame(gestureRef.current.rafId);
+      }
+      gestureRef.current.rafId = 0;
+      gestureRef.current.pending = null;
+      gestureRef.current.pointers.clear();
+      gestureRef.current.dragStart = null;
+      gestureRef.current.pinchStart = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  useEffect(() => {
+    panRef.current = { x: panX, y: panY };
+  }, [panX, panY]);
+
+  // Reset on map change or navigation stop
+  useEffect(() => {
+    if (!isNavigating) {
+      setZoom(1);
+      setPanX(0);
+      setPanY(0);
+    }
+  }, [mapId, isNavigating]);
+
+  const handleZoomIn = useCallback(() => setZoom(prev => Math.min(prev * 1.2, 5)), []);
+  const handleZoomOut = useCallback(() => setZoom(prev => Math.max(prev / 1.2, 0.5)), []);
+  const handleResetZoom = useCallback(() => { setZoom(1); setPanX(0); setPanY(0); }, []);
+
+  const handleWheel = useCallback((e) => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    setZoom(prev => Math.max(0.5, Math.min(5, prev * delta)));
+  }, []);
+
+  const commitGestureUpdate = useCallback((next) => {
+    gestureRef.current.pending = next;
+    if (gestureRef.current.rafId) return;
+    gestureRef.current.rafId = requestAnimationFrame(() => {
+      if (unmountedRef.current) return;
+      const pending = gestureRef.current.pending;
+      gestureRef.current.pending = null;
+      gestureRef.current.rafId = 0;
+      if (!pending) return;
+
+      if (pending.zoom != null) setZoom(pending.zoom);
+      if (pending.panX != null) setPanX(pending.panX);
+      if (pending.panY != null) setPanY(pending.panY);
+    });
+  }, []);
+
+  const handlePointerDown = useCallback((e) => {
+    const el = e.currentTarget;
+    if (el?.setPointerCapture) el.setPointerCapture(e.pointerId);
+
+    const pointers = gestureRef.current.pointers;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pointers.size === 1) {
+      gestureRef.current.dragStart = {
+        pointerId: e.pointerId,
+        x: e.clientX,
+        y: e.clientY,
+        panX: panRef.current.x,
+        panY: panRef.current.y,
+      };
+      gestureRef.current.pinchStart = null;
+      return;
+    }
+
+    if (pointers.size === 2) {
+      const [a, b] = Array.from(pointers.values());
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const midX = (a.x + b.x) / 2;
+      const midY = (a.y + b.y) / 2;
+      gestureRef.current.pinchStart = {
+        dist,
+        zoom: zoomRef.current,
+        panX: panRef.current.x,
+        panY: panRef.current.y,
+        midX,
+        midY,
+      };
+      gestureRef.current.dragStart = null;
+    }
+  }, []);
+
+  const handlePointerMove = useCallback((e) => {
+    const pointers = gestureRef.current.pointers;
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (pointers.size >= 2 && gestureRef.current.pinchStart) {
+      const [a, b] = Array.from(pointers.values());
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.hypot(dx, dy) || 1;
+      const midX = (a.x + b.x) / 2;
+      const midY = (a.y + b.y) / 2;
+
+      const start = gestureRef.current.pinchStart;
+      const ratio = dist / start.dist;
+      const nextZoom = Math.max(0.5, Math.min(5, start.zoom * ratio));
+      const scaleRatio = nextZoom / start.zoom;
+
+      const nextPanX = start.panX * scaleRatio + midX * (1 - scaleRatio);
+      const nextPanY = start.panY * scaleRatio + midY * (1 - scaleRatio);
+
+      commitGestureUpdate({ zoom: nextZoom, panX: nextPanX, panY: nextPanY });
+      return;
+    }
+
+    if (pointers.size === 1 && gestureRef.current.dragStart) {
+      const start = gestureRef.current.dragStart;
+      if (start.pointerId !== e.pointerId) return;
+      const dx = e.clientX - start.x;
+      const dy = e.clientY - start.y;
+      commitGestureUpdate({ panX: start.panX + dx, panY: start.panY + dy });
+    }
+  }, [commitGestureUpdate]);
+
+  const handlePointerUpOrCancel = useCallback((e) => {
+    const pointers = gestureRef.current.pointers;
+    if (pointers.has(e.pointerId)) pointers.delete(e.pointerId);
+
+    if (pointers.size === 1) {
+      const remainingId = Array.from(pointers.keys())[0];
+      const remaining = pointers.get(remainingId);
+      if (remaining) {
+        gestureRef.current.dragStart = {
+          pointerId: remainingId,
+          x: remaining.x,
+          y: remaining.y,
+          panX: panRef.current.x,
+          panY: panRef.current.y,
+        };
+      }
+      gestureRef.current.pinchStart = null;
+    } else if (pointers.size === 0) {
+      gestureRef.current.dragStart = null;
+      gestureRef.current.pinchStart = null;
+    }
+  }, []);
   const [mapSrc, setMapSrc] = useState('');
   const containerRef = useRef(null);
   const lastAutoFitRef = useRef(null);
@@ -125,7 +281,6 @@ export default function MapBox({
   useEffect(() => {
     if (!isNavigating) return;
     if (!pathBbox) return;
-    if (!onRequestView) return;
     if (autoFitNonce == null) return;
     if (lastAutoFitRef.current === autoFitNonce) return;
 
@@ -164,8 +319,10 @@ export default function MapBox({
     const nextPanY = -nextZoom * (bboxCenterY - centerY);
 
     lastAutoFitRef.current = autoFitNonce;
-    onRequestView({ zoom: nextZoom, panX: nextPanX, panY: nextPanY });
-  }, [autoFitNonce, isNavigating, onRequestView, pathBbox, svgHeight, svgWidth]);
+    setZoom(nextZoom);
+    setPanX(nextPanX);
+    setPanY(nextPanY);
+  }, [autoFitNonce, isNavigating, pathBbox, svgHeight, svgWidth]);
 
   return (
     <motion.div
@@ -269,15 +426,16 @@ export default function MapBox({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className={isNavigating ? 'absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing touch-none' : 'absolute inset-0 w-full h-full cursor-default'}
-              onWheel={isNavigating ? handleWheel : undefined}
-              onPointerDown={isNavigating ? handlePointerDown : undefined}
-              onPointerMove={isNavigating ? handlePointerMove : undefined}
-              onPointerUp={isNavigating ? handlePointerUp : undefined}
-              onPointerCancel={isNavigating ? handlePointerCancel : undefined}
+              className="absolute inset-0 w-full h-full cursor-grab active:cursor-grabbing touch-none"
+              onWheel={handleWheel}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUpOrCancel}
+              onPointerCancel={handlePointerUpOrCancel}
               style={{
-                transform: `scale(${zoom}) translate(${panX / zoom}px, ${panY / zoom}px)`,
+                transform: `scale(${zoom}) translate3d(${panX / zoom}px, ${panY / zoom}px, 0)`,
                 transformOrigin: 'center center',
+                willChange: 'transform',
               }}
             >
               <div className="relative w-full h-full">

@@ -62,7 +62,7 @@ export default function LoginPage({ onLogin, searchCount = 0 }) {
                 </div>
               ))}
             </div>
-            
+
             <div className="mt-8 rounded-xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm text-center">
               <p className="text-3xl font-bold text-white">{searchCount.toLocaleString()}</p>
               <p className="text-sm text-blue-100 mt-1">Total Destinations Searched</p>
@@ -186,7 +186,7 @@ export default function LoginPage({ onLogin, searchCount = 0 }) {
                     <img src={mentorMd} alt="Dr. Manish Dixit" className="h-12 w-12 rounded-full object-cover" />
                   </div>
                   <p className="mt-2 text-xs font-semibold text-slate-900">Dr. Manish Dixit</p>
-                  <p className="text-xs text-slate-600">Professor & Head, CS</p>
+                  <p className="text-xs text-slate-600">Professor & Head, CSE</p>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <div className="login-professor-frame">

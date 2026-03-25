@@ -9,6 +9,6 @@ export const features = [
 ];
 
 export const mentors = [
-  { initials: 'MD', name: 'Dr. Manish Dixit', role: 'Professor & Head, CS', photo: mentorManish },
+  { initials: 'MD', name: 'Dr. Manish Dixit', role: 'Professor & Head, CSE', photo: mentorManish },
   { initials: 'SA', name: 'Dr. Saurabh Agarwal', role: 'Assistant Professor', photo: mentorSaurabh },
 ];

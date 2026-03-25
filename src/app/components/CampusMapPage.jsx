@@ -8,7 +8,7 @@ import SearchCurrentLocation from './SearchCurrentLocation';
 import NavigationPanel from './NavigationPanel';
 import QuickAccess from './QuickAccess';
 import MapBox from './ui/MapBox';
-import {navigationNodes, navigationEdges } from '../data/campusData';
+import { navigationNodes, navigationEdges } from '../data/campusData';
 import { computeMultiMapRouteAsync, buildNodesMap, buildGlobalGraph } from '../../utils/multiMapNavigation';
 import { buildUndirectedEdgeIndex } from '../../utils/navigation_instructions';
 
@@ -456,8 +456,6 @@ export default function CampusMapPage({ userName, onLogout, onOpenDeveloperPage,
     <div className="min-h-screen flex flex-col">
       {/* Header */}
       <Header
-        userName={userName}
-        onLogout={onLogout}
         onOpenDeveloperPage={onOpenDeveloperPage}
       />
 

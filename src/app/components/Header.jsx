@@ -1,14 +1,6 @@
 import { motion } from 'motion/react';
-import { User, LogOut } from 'lucide-react';
+import { User } from 'lucide-react';
 import { Button } from './ui/button';
-import { Avatar, AvatarFallback } from './ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from './ui/dropdown-menu';
 import logoWebp from '../../assets/logo.webp';
 import clgLogo from '../../assets/clg_logo.webp';
 
@@ -22,7 +14,7 @@ import clgLogo from '../../assets/clg_logo.webp';
  * @param {function} onLogout - Callback function to handle user logout
  * @param {function} onOpenDeveloperPage - Callback function to open developer page
  */
-export default function Header({ userName, onLogout, onOpenDeveloperPage }) {
+export default function Header({ onOpenDeveloperPage }) {
   return (
     <motion.header
       initial={{ y: -20, opacity: 0 }}
@@ -41,33 +33,15 @@ export default function Header({ userName, onLogout, onOpenDeveloperPage }) {
             </picture>
           </div>
 
-          {/* User Menu Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="flex items-center gap-2 hover:bg-gray-50 rounded-xl px-3"
-              >
-                <Avatar className="w-8 h-8">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-sm">
-                    {userName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="hidden sm:inline text-sm text-gray-700">{userName}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 rounded-xl">
-              <DropdownMenuItem className="rounded-lg" onClick={onOpenDeveloperPage}>
-                <User className="w-4 h-4 mr-2" />
-                Developer & Feedback
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={onLogout} className="rounded-lg text-red-600">
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/* Developer & Feedback Button */}
+          <Button
+            variant="ghost"
+            onClick={onOpenDeveloperPage}
+            className="flex items-center gap-2 hover:bg-gray-50 rounded-xl px-4"
+          >
+            <User className="w-4 h-4" />
+            <span className="text-sm font-medium text-gray-700">Developer & Feedback</span>
+          </Button>
         </div>
       </div>
     </motion.header>
