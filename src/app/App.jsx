@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { Analytics } from "@vercel/analytics/react"
 
 const LoginPage = lazy(() => import('./components/LoginPage'));
@@ -17,16 +17,6 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
   const [activePage, setActivePage] = useState('map');
-  const [searchCount, setSearchCount] = useState(() => {
-    // Load search count from localStorage on initialization
-    const saved = localStorage.getItem('unimap_search_count');
-    return saved ? parseInt(saved, 10) : 0;
-  });
-
-  // Persist search count to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('unimap_search_count', searchCount.toString());
-  }, [searchCount]);
 
   /**
    * Handles user login.
@@ -50,18 +40,11 @@ export default function App() {
     setActivePage('map');
   };
 
-  /**
-   * Increments the search counter when a location is searched.
-   */
-  const handleSearchMade = () => {
-    setSearchCount((prev) => prev + 1);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       <Suspense fallback={<div className="min-h-screen" />}>
         {!isLoggedIn ? (
-          <LoginPage onLogin={handleLogin} searchCount={searchCount} />
+          <LoginPage onLogin={handleLogin} />
         ) : activePage === 'dev' ? (
           <DevPage onBackToMap={() => setActivePage('map')} />
         ) : (
@@ -69,7 +52,6 @@ export default function App() {
             userName={userName}
             onLogout={handleLogout}
             onOpenDeveloperPage={() => setActivePage('dev')}
-            onSearchMade={handleSearchMade}
           />
         )}
       </Suspense>

@@ -24,9 +24,8 @@ import { buildNavigationStepViewModel } from './services/navigationStepService';
  * @param {string} userName - The current logged-in user's name
  * @param {function} onLogout - Callback function to handle user logout
  * @param {function} onOpenDeveloperPage - Callback function to open developer page
- * @param {function} onSearchMade - Callback function called when a location is searched
  */
-export default function CampusMapPage({ userName, onLogout, onOpenDeveloperPage, onSearchMade }) {
+export default function CampusMapPage({ userName, onLogout, onOpenDeveloperPage }) {
   // Navigation state
   const [destination, setDestination] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
@@ -123,11 +122,7 @@ export default function CampusMapPage({ userName, onLogout, onOpenDeveloperPage,
       setPanY(0);
     }
     setDestination(location);
-    // Increment search counter when a destination is selected
-    if (onSearchMade) {
-      onSearchMade();
-    }
-  }, [isNavigating, isComputingRoute, onSearchMade]);
+  }, [isNavigating, isComputingRoute]);
 
   /**
    * Handles destination clearing
@@ -159,11 +154,7 @@ export default function CampusMapPage({ userName, onLogout, onOpenDeveloperPage,
       setPanY(0);
     }
     setCurrentLocation(location);
-    // Increment search counter when a current location is selected
-    if (onSearchMade) {
-      onSearchMade();
-    }
-  }, [isNavigating, isComputingRoute, onSearchMade]);
+  }, [isNavigating, isComputingRoute]);
 
   /**
    * Handles current location clearing

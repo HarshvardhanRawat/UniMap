@@ -13,9 +13,9 @@ import developerProfile from '../../assets/profile.webp';
  * Provides a simple login flow that sets a default user name.
  * 
  * @param {function} onLogin - Callback function called when user logs in
- *                            Receives the user's name as parameter* @param {number} searchCount - Total number of location searches made by users
+ *                            Receives the user's name as parameter
  */
-export default function LoginPage({ onLogin, searchCount = 0 }) {
+export default function LoginPage({ onLogin }) {
   /**
    * Handles Google login button click.
    * Currently uses a default user name for demonstration.
@@ -61,11 +61,6 @@ export default function LoginPage({ onLogin, searchCount = 0 }) {
                   <p className="mt-1 text-xs text-blue-100">{item.text}</p>
                 </div>
               ))}
-            </div>
-
-            <div className="mt-8 rounded-xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm text-center">
-              <p className="text-3xl font-bold text-white">{searchCount.toLocaleString()}</p>
-              <p className="text-sm text-blue-100 mt-1">Total Destinations Searched</p>
             </div>
           </div>
         </motion.section>
