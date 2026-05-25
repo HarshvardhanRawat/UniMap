@@ -134,12 +134,13 @@ function generateNavigationInstructions(path, nodes) {
           distance: Math.round(totalDist * 100) / 100, // Round to 2 decimals
           distanceInMeters: Math.round(totalDist / 10), // Approximate: 10 units = 1 meter
           from: path[segmentStart],
-          to: path[i - 1],
+          to: i === path.length - 1 ? path[i] : path[i - 1],
+          firstStepTo: path[segmentStart + 1],
           message: formatInstruction(currentDirection, Math.round(totalDist / 10))
         });
         
         accumulatedDistance = 0;
-        segmentStart = i;
+        segmentStart = i - 1;
       }
       
       currentDirection = direction;
@@ -200,7 +201,7 @@ function generateDetailedNavigationInstructions(path, nodes, edgesOrIndex) {
     if (instruction.action === 'continue' || instruction.action === 'turn') {
       // Find the edge for this segment
       const fromNode = instruction.from;
-      const toNode = instruction.to;
+      const toNode = instruction.firstStepTo || instruction.to;
       
       if (edgeIndex && fromNode && toNode) {
         const edge = edgeIndex.get(`${fromNode}|${toNode}`);

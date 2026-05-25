@@ -134,7 +134,7 @@ export async function dijkstraDistancesAsync(graph, start, options = {}) {
     const heap = new MinHeap();
     heap.push([0, start]);
 
-    let stepCounter = 0;
+    let lastYieldTime = performance.now();
     while (heap.size > 0) {
       if (signal?.aborted) return {};
 
@@ -157,8 +157,10 @@ export async function dijkstraDistancesAsync(graph, start, options = {}) {
         }
       }
 
-      stepCounter++;
-      if (stepCounter % yieldEvery === 0) await yieldToMainThread();
+      if (performance.now() - lastYieldTime > 10) {
+        await yieldToMainThread();
+        lastYieldTime = performance.now();
+      }
     }
 
     return distances;
@@ -177,7 +179,7 @@ export async function dijkstraDistancesAsync(graph, start, options = {}) {
   const heap = new MinHeap();
   heap.push([0, start]);
 
-  let stepCounter = 0;
+  let lastYieldTime = performance.now();
   while (heap.size > 0) {
     if (signal?.aborted) return {};
 
@@ -206,8 +208,10 @@ export async function dijkstraDistancesAsync(graph, start, options = {}) {
       }
     }
 
-    stepCounter++;
-    if (stepCounter % yieldEvery === 0) await yieldToMainThread();
+    if (performance.now() - lastYieldTime > 10) {
+      await yieldToMainThread();
+      lastYieldTime = performance.now();
+    }
   }
 
   // Return only reachable targets (omit unreachable to reduce payload).
