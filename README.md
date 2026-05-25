@@ -1,6 +1,6 @@
 <div align='center'>
 
-<img src='' alt='LOGO'>
+<img src='https://github.com/dotrwt/UniMap/blob/main/src/assets/logo.webp' alt='LOGO'>
 
 # UniMap
 
@@ -12,7 +12,7 @@ UniMap converts a static campus layout into a structured, traversable graph enab
 
 🔗 **Live demo:** [unimap-lemon.vercel.app](https://unimap-lemon.vercel.app)
 
-<img src='' alt='UI Preview'>
+<img src='https://github.com/dotrwt/UniMap/blob/main/UM__UI.png' alt='UI Preview'>
 
 ---
 
