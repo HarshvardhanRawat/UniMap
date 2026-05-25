@@ -1,6 +1,6 @@
 <div align='center'>
 
-<img src='https://github.com/dotrwt/UniMap/blob/main/src/assets/logo.webp' alt='LOGO'>
+<img src='https://github.com/dotrwt/UniMap/blob/main/src/assets/logo.webp' alt='LOGO' height='200'>
 
 # UniMap
 
